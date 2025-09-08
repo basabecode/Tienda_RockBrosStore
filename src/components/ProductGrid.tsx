@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useState } from 'react';
@@ -26,50 +32,50 @@ interface Product {
 const products: Product[] = [
   {
     id: 1,
-    name: "Premium Tech Bundle",
-    price: 1299,
-    originalPrice: 1499,
+    name: 'Casco Road Pro',
+    price: 299000,
+    originalPrice: 349000,
     image: product1,
     rating: 4.8,
     reviews: 124,
-    category: "Bundles",
+    category: 'Cascos',
     isOnSale: true,
-    description: "Complete tech setup with wireless headphones, smartwatch, laptop, and smartphone"
+    description: 'Casco aerodinámico de alto rendimiento para ruta',
   },
   {
     id: 2,
-    name: "Gaming Pro Setup",
-    price: 899,
+    name: 'Maillot Trail',
+    price: 129000,
     image: product2,
     rating: 4.9,
     reviews: 89,
-    category: "Gaming",
+    category: 'Ropa',
     isNew: true,
-    description: "Professional gaming setup with RGB keyboard, precision mouse, and high-refresh monitor"
+    description: 'Camiseta técnica para montaña con secado rápido',
   },
   {
     id: 3,
-    name: "Smart Home Starter Kit",
-    price: 449,
-    originalPrice: 549,
+    name: 'Luz Delantera 800lm',
+    price: 89000,
+    originalPrice: 129000,
     image: product3,
     rating: 4.7,
     reviews: 156,
-    category: "Smart Home",
+    category: 'Iluminación',
     isOnSale: true,
-    description: "Complete smart home solution with voice assistant, security cameras, and smart bulbs"
+    description: 'Luz USB recargable con modos de alta visibilidad',
   },
   {
     id: 4,
-    name: "Pro Photography Kit",
-    price: 2299,
+    name: 'Pedales Clip Pro',
+    price: 149000,
     image: product4,
     rating: 4.9,
     reviews: 67,
-    category: "Cameras",
+    category: 'Componentes',
     isNew: true,
-    description: "Professional camera equipment with DSLR, multiple lenses, tripod, and accessories"
-  }
+    description: 'Pedales de carga ligera con sistema de retención profesional',
+  },
 ];
 
 const ProductGrid = () => {
@@ -80,8 +86,8 @@ const ProductGrid = () => {
       <Star
         key={i}
         className={`h-4 w-4 ${
-          i < Math.floor(rating) 
-            ? 'text-yellow-400 fill-yellow-400' 
+          i < Math.floor(rating)
+            ? 'text-yellow-400 fill-yellow-400'
             : 'text-gray-300'
         }`}
       />
@@ -89,8 +95,8 @@ const ProductGrid = () => {
   };
 
   return (
-    <section 
-      id="shop" 
+    <section
+      id="shop"
       className="py-20 bg-gradient-to-b from-background to-muted/30"
       aria-labelledby="products-title"
     >
@@ -98,26 +104,27 @@ const ProductGrid = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-sm font-medium">
-            Featured Products
+            Productos destacados
           </Badge>
-          <h2 
-            id="products-title" 
+          <h2
+            id="products-title"
             className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6"
           >
-            Discover Our
+            Descubre
             <span className="block gradient-primary bg-clip-text text-transparent">
-              Best Sellers
+              nuestros más vendidos
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Handpicked premium electronics that deliver exceptional performance and value
+            Productos seleccionados para ciclistas: seguridad, confort y
+            rendimiento.
           </p>
         </div>
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <Card 
+          {products.map(product => (
+            <Card
               key={product.id}
               className={`group gradient-card border-0 shadow-soft hover:shadow-large transition-all duration-500 cursor-pointer ${
                 hoveredProduct === product.id ? 'scale-105' : ''
@@ -132,28 +139,28 @@ const ProductGrid = () => {
                 <div className="absolute top-4 left-4 z-10 flex flex-col space-y-2">
                   {product.isNew && (
                     <Badge className="bg-accent text-accent-foreground">
-                      New
+                      Nuevo
                     </Badge>
                   )}
                   {product.isOnSale && (
                     <Badge className="bg-destructive text-destructive-foreground">
-                      Sale
+                      Oferta
                     </Badge>
                   )}
                 </div>
 
                 {/* Quick Actions */}
                 <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     size="icon"
                     className="bg-white/90 hover:bg-white shadow-medium"
                     aria-label={`Add ${product.name} to wishlist`}
                   >
                     <Heart className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     size="icon"
                     className="bg-white/90 hover:bg-white shadow-medium"
                     aria-label={`Quick view ${product.name}`}
@@ -163,8 +170,8 @@ const ProductGrid = () => {
                 </div>
 
                 {/* Product Image */}
-                <img 
-                  src={product.image} 
+                <img
+                  src={product.image}
                   alt={product.description}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
@@ -173,10 +180,12 @@ const ProductGrid = () => {
 
               <CardContent className="p-6">
                 {/* Category */}
-                <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
-                
+                <p className="text-sm text-muted-foreground mb-2">
+                  {product.category}
+                </p>
+
                 {/* Product Name */}
-                <CardTitle 
+                <CardTitle
                   id={`product-${product.id}-title`}
                   className="text-lg font-semibold mb-3 group-hover:text-primary transition-colors"
                 >
@@ -189,7 +198,7 @@ const ProductGrid = () => {
                     {renderStars(product.rating)}
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {product.rating} ({product.reviews} reviews)
+                    {product.rating} ({product.reviews} reseñas)
                   </span>
                 </div>
 
@@ -207,13 +216,13 @@ const ProductGrid = () => {
               </CardContent>
 
               <CardFooter className="p-6 pt-0">
-                <Button 
-                  variant="default" 
+                <Button
+                  variant="default"
                   className="w-full shadow-medium hover:shadow-large"
-                  aria-label={`Add ${product.name} to cart for $${product.price}`}
+                  aria-label={`Agregar ${product.name} al carrito por $${product.price}`}
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add to Cart
+                  Añadir al carrito
                 </Button>
               </CardFooter>
             </Card>
@@ -222,12 +231,12 @@ const ProductGrid = () => {
 
         {/* View All Button */}
         <div className="text-center mt-12">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="lg"
             className="shadow-medium hover:shadow-large"
           >
-            View All Products
+            Ver todos los productos
           </Button>
         </div>
       </div>
