@@ -1,32 +1,33 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Star, ShoppingCart, Heart, Eye } from 'lucide-react';
-import { useState } from 'react';
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Star, ShoppingCart, Heart, Eye } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import product1 from '@/assets/product-1.jpg';
-import product2 from '@/assets/product-2.jpg';
-import product3 from '@/assets/product-3.jpg';
-import product4 from '@/assets/product-4.jpg';
+import product1 from '@/assets/product-1.jpg'
+import product2 from '@/assets/product-2.jpg'
+import product3 from '@/assets/product-3.jpg'
+import product4 from '@/assets/product-4.jpg'
 
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  category: string;
-  isNew?: boolean;
-  isOnSale?: boolean;
-  description: string;
+  id: number
+  name: string
+  price: number
+  originalPrice?: number
+  image: string
+  rating: number
+  reviews: number
+  category: string
+  isNew?: boolean
+  isOnSale?: boolean
+  description: string
 }
 
 const products: Product[] = [
@@ -76,10 +77,13 @@ const products: Product[] = [
     isNew: true,
     description: 'Pedales de carga ligera con sistema de retención profesional',
   },
-];
+]
 
 const ProductGrid = () => {
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null)
+  const navigate = useNavigate()
+  console.log('ProductGrid rendering, products:', products)
+  console.log('ProductGrid rendering, products:', products)
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -91,8 +95,8 @@ const ProductGrid = () => {
             : 'text-gray-300'
         }`}
       />
-    ));
-  };
+    ))
+  }
 
   return (
     <section
@@ -131,6 +135,7 @@ const ProductGrid = () => {
               }`}
               onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
+              onClick={() => navigate(`/product/${product.id}`)}
               role="article"
               aria-labelledby={`product-${product.id}-title`}
             >
@@ -241,7 +246,7 @@ const ProductGrid = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default ProductGrid;
+export default ProductGrid

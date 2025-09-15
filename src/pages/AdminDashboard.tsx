@@ -1,376 +1,405 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { supabase } from '@/lib/supabase'
-import { useToast } from '@/hooks/use-toast'
+import { Progress } from '@/components/ui/progress'
+import AdminSidebar from '@/components/AdminSidebar'
 import {
+  LayoutDashboard,
   Package,
   ShoppingCart,
   Users,
   TrendingUp,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
+  DollarSign,
+  AlertCircle,
+  CheckCircle,
+  BarChart3,
 } from 'lucide-react'
 
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  stock: number
-  category: string
-  brand: string
-  is_featured: boolean
-  status: string
-}
-
-interface Order {
-  id: string
-  created_at: string
-  total: number
-  status: string
-  user_id: string
-  profiles: {
-    email: string
-    full_name: string
-  } | null
-}
-
 const AdminDashboard = () => {
-  const { user, isAdmin } = useAuth()
-  const { toast } = useToast()
-  const [products, setProducts] = useState<Product[]>([])
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    activeUsers: 0,
-  })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true)
-
-      // Cargar productos
-      const { data: productsData, error: productsError } = await supabase
+  // Fetch dashboard stats
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: async () => {
+      // Products count
+      const { count: productsCount, error: productsError } = await supabase
         .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .select('*', { count: 'exact', head: true })
 
       if (productsError) throw productsError
 
-      // Cargar órdenes
+      // Orders stats
       const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select('total_amount, status, created_at')
+        .gte(
+          'created_at',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        )
+
+      if (ordersError) throw ordersError
+
+      // Users count
+      const { count: usersCount, error: usersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+
+      if (usersError) throw usersError
+
+      // Calculate metrics
+      const totalSales =
+        ordersData?.reduce((sum, order) => sum + order.total_amount, 0) || 0
+      const totalOrders = ordersData?.length || 0
+      const deliveredOrders =
+        ordersData?.filter(order => order.status === 'delivered').length || 0
+
+      return {
+        productsCount: productsCount || 0,
+        usersCount: usersCount || 0,
+        totalSales,
+        totalOrders,
+        deliveredOrders,
+        conversionRate:
+          totalOrders > 0 ? (deliveredOrders / totalOrders) * 100 : 0,
+      }
+    },
+  })
+
+  // Fetch recent orders
+  const { data: recentOrders } = useQuery({
+    queryKey: ['admin-recent-orders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('orders')
         .select(
           `
-          *,
-          profiles (
-            email,
-            full_name
+          id,
+          total_amount,
+          status,
+          created_at,
+          profiles:user_id (
+            full_name,
+            email
           )
         `
         )
         .order('created_at', { ascending: false })
-        .limit(20)
-
-      if (ordersError) throw ordersError
-
-      setProducts(productsData || [])
-      setOrders(ordersData || [])
-
-      // Calcular estadísticas
-      const totalRevenue =
-        (ordersData as Order[])?.reduce(
-          (sum, order) => sum + Number(order.total),
-          0
-        ) || 0
-
-      setStats({
-        totalProducts: productsData?.length || 0,
-        totalOrders: ordersData?.length || 0,
-        totalRevenue,
-        activeUsers: 0, // Implementar después
-      })
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-      toast({
-        title: 'Error',
-        description: 'No se pudieron cargar los datos del dashboard',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadDashboardData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Verificar permisos de admin
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto py-20 text-center">
-        <h1 className="text-2xl font-bold text-red-600">Acceso Denegado</h1>
-        <p className="mt-4">No tienes permisos para acceder a esta página.</p>
-      </div>
-    )
-  }
-
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', orderId)
+        .limit(5)
 
       if (error) throw error
+      // Ensure profiles is always an object, not an array
+      return data?.map(order => ({
+        ...order,
+        profiles: Array.isArray(order.profiles)
+          ? order.profiles[0]
+          : order.profiles,
+      }))
+    },
+  })
 
-      setOrders(
-        orders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      )
+  // Fetch low stock products
+  const { data: lowStockProducts } = useQuery({
+    queryKey: ['admin-low-stock'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, stock')
+        .lt('stock', 10)
+        .eq('is_active', true)
+        .order('stock', { ascending: true })
+        .limit(5)
 
-      toast({
-        title: 'Éxito',
-        description: 'Estado de la orden actualizado',
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'No se pudo actualizar el estado de la orden',
-        variant: 'destructive',
-      })
-    }
+      if (error) throw error
+      return data
+    },
+  })
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(price)
   }
 
-  const getStatusBadgeVariant = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'default'
-      case 'confirmed':
-        return 'secondary'
+        return 'bg-yellow-100 text-yellow-800'
+      case 'processing':
+        return 'bg-blue-100 text-blue-800'
       case 'shipped':
-        return 'outline'
+        return 'bg-purple-100 text-purple-800'
       case 'delivered':
-        return 'default'
+        return 'bg-green-100 text-green-800'
       case 'cancelled':
-        return 'destructive'
+        return 'bg-red-100 text-red-800'
       default:
-        return 'default'
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto py-20 text-center">
-        <p>Cargando dashboard...</p>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard de Administración</h1>
-        <p className="text-gray-600 mt-2">
-          Gestiona productos, órdenes y usuarios
-        </p>
-      </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Productos
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Órdenes</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Ingresos Totales
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.totalRevenue.toLocaleString()}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden"
+              >
+                <LayoutDashboard className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-sm text-gray-600">
+                  Bienvenido al panel de administración de RockBros
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </header>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Usuarios Activos
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeUsers}</div>
-          </CardContent>
-        </Card>
+        {/* Dashboard Content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Productos
+                      </p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {stats?.productsCount || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">En catálogo</p>
+                    </div>
+                    <Package className="w-8 h-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Ventas (30d)
+                      </p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatPrice(stats?.totalSales || 0)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {stats?.totalOrders || 0} pedidos
+                      </p>
+                    </div>
+                    <DollarSign className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Clientes
+                      </p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {stats?.usersCount || 0}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Registrados</p>
+                    </div>
+                    <Users className="w-8 h-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Conversión
+                      </p>
+                      <p className="text-2xl font-bold text-orange-600">
+                        {stats?.conversionRate?.toFixed(1) || 0}%
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Tasa de entrega
+                      </p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-orange-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Orders */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    Pedidos Recientes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentOrders?.map(order => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <ShoppingCart className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              #{order.id.slice(-8)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.profiles?.full_name ||
+                                order.profiles?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">
+                            {formatPrice(order.total_amount)}
+                          </p>
+                          <Badge className={getStatusColor(order.status)}>
+                            {order.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+
+                    {recentOrders?.length === 0 && (
+                      <div className="text-center py-8">
+                        <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-600">
+                          No hay pedidos recientes
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Low Stock Alert */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    Productos con Stock Bajo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {lowStockProducts?.map(product => (
+                      <div
+                        key={product.id}
+                        className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
+                      >
+                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {product.name}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Stock: {product.stock} unidades
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <Progress
+                            value={(product.stock / 10) * 100}
+                            className="w-16 h-2"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {lowStockProducts?.length === 0 && (
+                      <div className="text-center py-8">
+                        <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-2" />
+                        <p className="text-gray-600">
+                          Todos los productos tienen stock suficiente
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Acciones Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                    className="h-20 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                    onClick={() => (window.location.href = '/admin/products')}
+                  >
+                    <Package className="w-6 h-6" />
+                    <span>Gestionar Productos</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center space-y-2"
+                    onClick={() => (window.location.href = '/admin/users')}
+                  >
+                    <Users className="w-6 h-6" />
+                    <span>Gestionar Usuarios</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col items-center justify-center space-y-2"
+                    onClick={() => (window.location.href = '/admin/sales')}
+                  >
+                    <BarChart3 className="w-6 h-6" />
+                    <span>Ver Ventas</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
-
-      {/* Tabs para gestión */}
-      <Tabs defaultValue="products" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="products">Productos</TabsTrigger>
-          <TabsTrigger value="orders">Órdenes</TabsTrigger>
-          <TabsTrigger value="users">Usuarios</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="products" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Gestión de Productos</h2>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Agregar Producto
-            </Button>
-          </div>
-
-          <div className="grid gap-4">
-            {products.map(product => (
-              <Card key={product.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
-                      <p className="text-sm text-gray-600">
-                        {product.brand} - {product.category}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge
-                        variant={
-                          product.status === 'active' ? 'default' : 'secondary'
-                        }
-                      >
-                        {product.status}
-                      </Badge>
-                      {product.is_featured && (
-                        <Badge variant="outline">Destacado</Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-gray-600">
-                        {product.description}
-                      </p>
-                      <p className="font-semibold">
-                        ${product.price.toLocaleString()}
-                      </p>
-                      <p className="text-sm">Stock: {product.stock}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="orders" className="space-y-4">
-          <h2 className="text-xl font-semibold">Gestión de Órdenes</h2>
-
-          <div className="grid gap-4">
-            {orders.map(order => (
-              <Card key={order.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        Orden #{order.id.slice(0, 8)}
-                      </CardTitle>
-                      <p className="text-sm text-gray-600">
-                        {order.profiles?.full_name} ({order.profiles?.email})
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(order.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant={getStatusBadgeVariant(order.status)}>
-                      {order.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold">
-                        ${order.total.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <select
-                        value={order.status}
-                        onChange={e =>
-                          updateOrderStatus(order.id, e.target.value)
-                        }
-                        className="border rounded px-2 py-1 text-sm"
-                      >
-                        <option value="pending">Pendiente</option>
-                        <option value="confirmed">Confirmada</option>
-                        <option value="shipped">Enviada</option>
-                        <option value="delivered">Entregada</option>
-                        <option value="cancelled">Cancelada</option>
-                      </select>
-                      <Button size="sm" variant="outline">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="users" className="space-y-4">
-          <h2 className="text-xl font-semibold">Gestión de Usuarios</h2>
-          <p className="text-gray-600">Funcionalidad en desarrollo...</p>
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }

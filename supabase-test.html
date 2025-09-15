@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧪 Supabase Connection Tests - RockBros Store</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+      }
+
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+        margin-bottom: 20px;
+      }
+
+      .status.ready {
+        background: #27ae60;
+        color: white;
+      }
+
+      .status.testing {
+        background: #f39c12;
+        color: white;
+      }
+
+      .status.completed {
+        background: #3498db;
+        color: white;
+      }
+
+      .controls {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      button:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .console {
+        background: #2c3e50;
+        color: #ecf0f1;
+        border-radius: 10px;
+        padding: 20px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        max-height: 500px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+
+      .console-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #34495e;
+      }
+
+      .clear-btn {
+        background: #e74c3c;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8em;
+      }
+
+      .summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        display: none;
+      }
+
+      .summary h3 {
+        color: #2c3e50;
+        margin-top: 0;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .metric {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border-left: 4px solid #3498db;
+      }
+
+      .metric.pass {
+        border-left-color: #27ae60;
+      }
+      .metric.fail {
+        border-left-color: #e74c3c;
+      }
+      .metric.skip {
+        border-left-color: #f39c12;
+      }
+
+      .metric-number {
+        font-size: 2em;
+        font-weight: bold;
+        display: block;
+      }
+
+      .metric-label {
+        color: #7f8c8d;
+        font-size: 0.9em;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .test-result {
+        margin: 5px 0;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .test-result.pass {
+        background: rgba(39, 174, 96, 0.1);
+        border-left: 3px solid #27ae60;
+      }
+
+      .test-result.fail {
+        background: rgba(231, 76, 60, 0.1);
+        border-left: 3px solid #e74c3c;
+      }
+
+      .test-result.skip {
+        background: rgba(243, 156, 18, 0.1);
+        border-left: 3px solid #f39c12;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        color: #7f8c8d;
+        font-size: 0.9em;
+      }
+
+      .footer a {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Supabase Connection Tests</h1>
+      <p class="subtitle">Suite completa de validación para RockBros Store</p>
+
+      <div id="status" class="status ready">Listo para ejecutar tests</div>
+
+      <div class="controls">
+        <button id="runTests" onclick="runTests()">
+          🚀 Ejecutar Tests Completos
+        </button>
+        <button id="clearConsole" onclick="clearConsole()">
+          🧹 Limpiar Consola
+        </button>
+      </div>
+
+      <div class="console-header">
+        <h3>📋 Resultados de Tests</h3>
+        <button class="clear-btn" onclick="clearConsole()">Limpiar</button>
+      </div>
+
+      <div id="console" class="console">🔍 Esperando ejecución de tests...</div>
+
+      <div id="summary" class="summary">
+        <h3>📊 Resumen de Resultados</h3>
+        <div class="metrics" id="metrics"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>
+        🏪 <strong>RockBros Store</strong> | 📅 15 de septiembre de 2025 |
+        <a href="https://supabase.com" target="_blank">Supabase</a>
+      </p>
+    </div>
+
+    <script type="module">
+      // Importar el módulo de tests
+      import { runSupabaseTests } from '../src/utils/supabase-tests.js'
+
+      let isRunning = false
+      const statusEl = document.getElementById('status')
+      const consoleEl = document.getElementById('console')
+      const summaryEl = document.getElementById('summary')
+      const runBtn = document.getElementById('runTests')
+
+      // Sobrescribir console.log para capturar output
+      const originalLog = console.log
+      const originalError = console.error
+      const originalWarn = console.warn
+
+      let logs = []
+
+      function captureLog(type, ...args) {
+        const message = args.join(' ')
+        const timestamp = new Date().toLocaleTimeString()
+
+        let formattedMessage = `[${timestamp}] ${message}`
+
+        if (type === 'error') {
+          formattedMessage = `❌ ${formattedMessage}`
+        } else if (type === 'warn') {
+          formattedMessage = `⚠️ ${formattedMessage}`
+        } else if (message.includes('✅')) {
+          formattedMessage = `✅ ${message}`
+        } else if (message.includes('❌')) {
+          formattedMessage = `❌ ${message}`
+        } else if (message.includes('🔍')) {
+          formattedMessage = `🔍 ${message}`
+        }
+
+        logs.push(formattedMessage)
+        consoleEl.textContent = logs.join('\n')
+        consoleEl.scrollTop = consoleEl.scrollHeight
+      }
+
+      console.log = (...args) => {
+        captureLog('log', ...args)
+        originalLog(...args)
+      }
+
+      console.error = (...args) => {
+        captureLog('error', ...args)
+        originalError(...args)
+      }
+
+      console.warn = (...args) => {
+        captureLog('warn', ...args)
+        originalWarn(...args)
+      }
+
+      window.runTests = async function () {
+        if (isRunning) return
+
+        isRunning = true
+        statusEl.className = 'status testing'
+        statusEl.textContent = 'Ejecutando tests...'
+        runBtn.disabled = true
+        logs = []
+        summaryEl.style.display = 'none'
+
+        try {
+          await runSupabaseTests()
+          statusEl.className = 'status completed'
+          statusEl.textContent = 'Tests completados'
+          summaryEl.style.display = 'block'
+        } catch (error) {
+          console.error('Error ejecutando tests:', error)
+          statusEl.className = 'status ready'
+          statusEl.textContent = 'Error en tests - Revisa consola'
+        } finally {
+          isRunning = false
+          runBtn.disabled = false
+        }
+      }
+
+      window.clearConsole = function () {
+        logs = []
+        consoleEl.textContent =
+          '🔍 Consola limpiada. Haz clic en "Ejecutar Tests" para comenzar.'
+      }
+
+      // Auto-ejecutar tests al cargar si hay parámetro en URL
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('auto') === 'true') {
+        setTimeout(() => runTests(), 1000)
+      }
+    </script>
+  </body>
+</html>

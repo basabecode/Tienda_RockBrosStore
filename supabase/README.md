@@ -1,101 +1,107 @@
-# 🗂️ Estructura Supabase Consolidada
+# � Supabase Setup - Tienda RockBros
 
-## 📁 Archivos Organizados (3 archivos finales)
+## 📦 Estructura Consolidada (2025)
 
-### 1️⃣ `01-database-schema.sql`
+### ✅ Archivo Principal
 
-**Ejecutar PRIMERO** - Base de datos completa
+- **`SUPABASE-SETUP-COMPLETE.sql`** - **ARCHIVO ÚNICO** con TODO lo necesario
+  - ✅ Schema completo de base de datos (16 tablas)
+  - ✅ Políticas RLS de seguridad (25+ políticas)
+  - ✅ Funciones backend útiles (5 funciones)
+  - ✅ Triggers automáticos
+  - ✅ Datos iniciales de ejemplo
+  - ✅ Verificación de salud del sistema
 
-- ✅ Todas las tablas (profiles, products, orders, addresses, order_items)
-- ✅ Migración de datos existentes (mapeo title → name)
-- ✅ Índices para performance
-- ✅ Triggers y funciones básicas
-- ✅ Verificación de estructura
+### 📚 Documentación
 
-### 2️⃣ `02-security-policies.sql`
-
-**Ejecutar SEGUNDO** - Seguridad y permisos
-
-- ✅ Funciones helper sin recursión infinita
-- ✅ Políticas RLS para todas las tablas
-- ✅ Permisos de usuario y administrador
-- ✅ Verificación de políticas aplicadas
-
-### 3️⃣ `03-admin-functions.sql`
-
-**Ejecutar TERCERO** - Gestión administrativa
-
-- ✅ Funciones para promover/degradar admins
-- ✅ Setup inicial del primer administrador
-- ✅ Productos de ejemplo para ciclismo
-- ✅ Scripts de mantenimiento
-- ✅ Comandos útiles documentados
-
-### 🚨 `URGENT-FIX.sql`
-
-**Para emergencias** - Deshabilita RLS temporalmente
-
-- 🔧 Corrección inmediata de problemas críticos
-- 🔧 Eliminar después de usar los archivos principales
+- **`README-configuracion-2025.md`** - Guía completa de configuración y troubleshooting
+- **`README.md`** - Este archivo (estructura general)
 
 ---
 
-## 🚀 Orden de Ejecución
+## ⚡ Configuración Rápida
+
+### 1. Ejecutar Setup Completo
 
 ```sql
--- 1. Ejecutar en Supabase Dashboard → SQL Editor:
--- Copiar y pegar contenido completo de cada archivo
-
--- PASO 1: Base de datos
-\i 01-database-schema.sql
-
--- PASO 2: Seguridad
-\i 02-security-policies.sql
-
--- PASO 3: Administración
-\i 03-admin-functions.sql
+-- En Supabase SQL Editor, ejecutar:
+-- SUPABASE-SETUP-COMPLETE.sql
 ```
 
-## 🎯 Comandos Útiles Después del Setup
+### 2. Verificar Instalación
 
 ```sql
--- Promover usuario a admin (cambiar email):
-SELECT public.promote_to_admin('tu-email@ejemplo.com', 'Tu Nombre');
-
--- Verificar administradores:
-SELECT * FROM public.list_admins();
-
--- Verificar salud del sistema:
-SELECT public.check_admin_health();
-
--- Insertar productos de ejemplo:
-SELECT public.insert_sample_products();
+-- Ejecutar verificación automática
+SELECT public.health_check_report();
 ```
 
-## 📊 Consolidación Realizada
+### 3. Configurar Frontend
 
-**ANTES:** 5 archivos fragmentados
-
-- ❌ `00-migration.sql`
-- ❌ `01-schema.sql`
-- ❌ `02-security.sql`
-- ❌ `03-admin-setup.sql`
-- ❌ `URGENT-FIX.sql`
-
-**DESPUÉS:** 3 archivos organizados + 1 emergencia
-
-- ✅ `01-database-schema.sql` (Estructura completa)
-- ✅ `02-security-policies.sql` (Seguridad RLS)
-- ✅ `03-admin-functions.sql` (Administración)
-- 🚨 `URGENT-FIX.sql` (Solo emergencias)
+```env
+# .env.local
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key
+```
 
 ---
 
-## 🔧 Características Mejoradas
+## 🎯 Características Incluidas
 
-- **Sin recursión infinita** en políticas RLS
-- **Mapeo automático** de columnas existentes (title → name)
-- **Funciones de administración** completas y seguras
-- **Productos de ejemplo** específicos para ciclismo
-- **Verificaciones automáticas** de salud del sistema
-- **Documentación incluida** con comandos útiles
+### 🏗️ Base de Datos
+
+- **16 tablas** completas para e-commerce
+- **Integridad referencial** con foreign keys
+- **Índices optimizados** para performance
+- **Constraints y validaciones**
+
+### � Seguridad
+
+- **Row Level Security (RLS)** habilitado
+- **25+ políticas** de acceso granular
+- **Roles de usuario**: user, moderator, admin
+- **Protección de datos sensibles**
+
+### ⚙️ Funciones Backend
+
+- `search_products()` - Búsqueda avanzada con filtros
+- `get_featured_products()` - Productos destacados
+- `toggle_favorite()` - Gestión de favoritos
+- `create_order_from_cart()` - Creación de órdenes
+- `health_check_report()` - Verificación del sistema
+
+### 🔄 Automatizaciones
+
+- **Rating automático** de productos
+- **Timestamps automáticos** (updated_at)
+- **Movimientos de inventario** registrados
+- **Validaciones de stock**
+
+### 📦 Datos Iniciales
+
+- **Categorías** de productos
+- **Marcas** reconocidas
+- **Productos** de ejemplo realistas
+- **Configuración** del sitio
+
+---
+
+## 🚀 Próximos Pasos
+
+1. **Ejecutar** `SUPABASE-SETUP-COMPLETE.sql` en Supabase
+2. **Verificar** que la instalación fue exitosa
+3. **Configurar** variables de entorno en el frontend
+4. **Probar** conexión con la aplicación
+5. **Desplegar** a producción
+
+---
+
+## � Soporte
+
+- 📖 **Documentación completa**: `README-configuracion-2025.md`
+- 🔧 **Troubleshooting**: Ver sección de problemas comunes
+- 📊 **Monitoreo**: Dashboard de Supabase
+- 💬 **Comunidad**: [Supabase Discord](https://supabase.com/discord)
+
+---
+
+**¡Listo para comenzar!** 🎉 Tu tienda RockBros tiene todo lo necesario para funcionar.

@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   Laptop,
   Smartphone,
@@ -11,15 +11,15 @@ import {
   Gamepad2,
   Monitor,
   ArrowRight,
-} from 'lucide-react';
+} from 'lucide-react'
 
 interface Category {
-  id: string;
-  name: string;
-  icon: React.ComponentType<any>;
-  count: number;
-  description: string;
-  color: string;
+  id: string
+  name: string
+  icon: React.ComponentType<{ className?: string; size?: string | number }>
+  count: number
+  description: string
+  color: string
 }
 
 const categories: Category[] = [
@@ -87,7 +87,7 @@ const categories: Category[] = [
     description: 'Mantenimiento y ajuste profesional',
     color: 'bg-teal-500',
   },
-];
+]
 
 const Categories = () => {
   return (
@@ -120,7 +120,7 @@ const Categories = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           {categories.map(category => {
-            const IconComponent = category.icon;
+            const IconComponent = category.icon
 
             return (
               <Card
@@ -132,7 +132,7 @@ const Categories = () => {
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     // Handle category navigation
-                    console.log(`Navigate to ${category.name} category`);
+                    console.log(`Navigate to ${category.name} category`)
                   }
                 }}
               >
@@ -160,7 +160,7 @@ const Categories = () => {
                   </Badge>
                 </CardContent>
               </Card>
-            );
+            )
           })}
         </div>
 
@@ -224,7 +224,7 @@ const Categories = () => {
         </Card>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Categories;
+export default Categories

@@ -20,7 +20,7 @@ const HeroBanner = () => {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src={heroBanner}
+          src="/hero_ppal/66b1e90cef032.jpeg"
           alt="Equipamiento de ciclismo - imagen promocional"
           className="w-full h-full object-cover"
           loading="eager"
@@ -50,6 +50,8 @@ const HeroBanner = () => {
             </span>
             <span className="block text-3xl md:text-4xl lg:text-5xl font-normal mt-2">
               Calidad y confianza en Colombia
+              <br />
+              Página en construcción &#128522;
             </span>
           </h1>
 

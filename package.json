@@ -13,7 +13,14 @@
     "admin": "node scripts/setup-admin.js",
     "admin:check": "node scripts/setup-admin.js check",
     "admin:setup": "node scripts/setup-admin.js setup",
-    "admin:promote": "node scripts/setup-admin.js promote"
+    "admin:promote": "node scripts/setup-admin.js promote",
+    "test:supabase": "node scripts/test-supabase.js",
+    "test:supabase:verbose": "node scripts/test-supabase.js --verbose",
+    "test:supabase:json": "node scripts/test-supabase.js --json",
+    "test:supabase:html": "python -m http.server 3001 --directory . && echo 'Abre: http://localhost:3001/supabase-test.html'",
+    "verify:supabase": "node scripts/verify-supabase.js",
+    "inspect:functions": "node scripts/inspect-functions.js",
+    "manage:users": "node scripts/manage-users.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -85,6 +92,6 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.20"
   }
 }
