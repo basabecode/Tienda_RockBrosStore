@@ -73,12 +73,38 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 })
 
+// Intentar autenticarse opcionalmente si se proveen credenciales de admin
+async function maybeSignInAdmin() {
+  const email = process.env.ADMIN_EMAIL
+  const password = process.env.ADMIN_PASSWORD
+  if (!email || !password) return { signedIn: false }
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) {
+      console.warn(
+        '⚠️ No se pudo iniciar sesión con ADMIN_EMAIL/ADMIN_PASSWORD:',
+        error.message
+      )
+      return { signedIn: false }
+    }
+    console.log(`🔐 Sesión iniciada como ${email}`)
+    return { signedIn: true }
+  } catch (err) {
+    console.warn('⚠️ Error iniciando sesión como admin:', err.message)
+    return { signedIn: false }
+  }
+}
+
 // ==========================================
 // 👥 FUNCIONES DE GESTIÓN
 // ==========================================
 
 async function listUsers() {
   try {
+    await maybeSignInAdmin()
     console.log('👥 LISTA DE USUARIOS')
     console.log('===================')
 
@@ -130,6 +156,7 @@ async function listUsers() {
 
 async function promoteUser(userId) {
   try {
+    await maybeSignInAdmin()
     console.log(`👑 PROMOVIENDO USUARIO A ADMIN`)
     console.log('==============================')
     console.log(`ID del usuario: ${userId}`)
@@ -156,6 +183,7 @@ async function promoteUser(userId) {
 
 async function demoteUser(userId) {
   try {
+    await maybeSignInAdmin()
     console.log(`👤 DEGRADANDO USUARIO A COMÚN`)
     console.log('==============================')
     console.log(`ID del usuario: ${userId}`)
@@ -182,6 +210,7 @@ async function demoteUser(userId) {
 
 async function toggleUserStatus(userId) {
   try {
+    await maybeSignInAdmin()
     console.log(`🔄 CAMBIANDO ESTADO DEL USUARIO`)
     console.log('================================')
     console.log(`ID del usuario: ${userId}`)
@@ -209,6 +238,7 @@ async function toggleUserStatus(userId) {
 
 async function checkUsersSetup() {
   try {
+    await maybeSignInAdmin()
     console.log('🔍 VERIFICACIÓN DE CONFIGURACIÓN DE USUARIOS')
     console.log('============================================')
 
@@ -244,6 +274,11 @@ function showHelp() {
   console.log('  toggle <id>   - Activa/desactiva usuario')
   console.log('  check         - Verifica configuración de usuarios')
   console.log('  help          - Muestra esta ayuda')
+  console.log('')
+  console.log('Variables opcionales:')
+  console.log(
+    '  ADMIN_EMAIL, ADMIN_PASSWORD  - Credenciales para ejecutar RPCs protegidos'
+  )
   console.log('')
   console.log('Ejemplos:')
   console.log('  node scripts/manage-users.js list')

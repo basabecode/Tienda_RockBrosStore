@@ -7,11 +7,11 @@ Tienda online completa de accesorios y repuestos para ciclismo, desarrollada con
 - 🔐 **Sistema de autenticación** completo con Supabase Auth
 - 👑 **Panel de administración** con gestión de usuarios admin
 - 🛒 **Carrito de compras** funcional
-- ❤️ **Lista de favoritos** 
+- ❤️ **Lista de favoritos**
 - 📱 **Diseño responsive** con TailwindCSS
 - 🎨 **Componentes UI** modernos con shadcn/ui
 - 🔍 **Sistema de búsqueda** y filtros
-- 📊 **Dashboard administrativo** 
+- 📊 **Dashboard administrativo**
 - 🛡️ **Protección de rutas** admin
 - 🔧 **Herramientas de desarrollo** integradas
 
@@ -38,7 +38,7 @@ cp .env.example .env.local
 # Editar .env.local con tus credenciales de Supabase
 
 # Ejecutar SQL en Supabase
-# Copiar y ejecutar el contenido de supabase/schema.sql en el SQL Editor
+# Copiar y ejecutar el contenido de `supabase/SUPABASE-SETUP-COMPLETE.sql` en el SQL Editor
 
 # Iniciar servidor de desarrollo
 npm run dev
@@ -132,9 +132,10 @@ import { StorageService } from './lib/services'
 ```env
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_clave_publica
-SUPABASE_SERVICE_ROLE_KEY=tu_clave_privada
 VITE_ADMIN_SECRET=secreto_temporal_admin
 ```
+
+Nota de seguridad: la variable `SUPABASE_SERVICE_ROLE_KEY` NUNCA debe usarse ni definirse en el frontend. Si necesitas realizar operaciones privilegiadas (admin), usa Edge Functions o un backend seguro con la service role configurada en el servidor.
 
 ### Comandos de Build
 

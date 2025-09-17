@@ -134,14 +134,14 @@ export async function isCurrentUserAdmin(): Promise<boolean> {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('role')
       .eq('id', user.user.id)
       .single()
 
     // Verificación explícita del tipo y null
     if (!profile || typeof profile !== 'object') return false
 
-    return (profile as { is_admin: boolean }).is_admin === true
+    return (profile as { role: string }).role === 'admin'
   } catch (error) {
     console.error('Error verificando rol de admin:', error)
     return false

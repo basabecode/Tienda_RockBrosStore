@@ -144,16 +144,12 @@ class SupabaseTestRunner {
 
   async testConnection() {
     return this.runTest('Conexión Básica', async () => {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('products')
-        .select('count')
-        .single()
+        .select('*', { count: 'exact', head: true })
 
       if (error) throw new Error(`Error de conexión: ${error.message}`)
-      if (data === null)
-        throw new Error('No se pudo obtener el conteo de productos')
-
-      return { connection: 'OK', productsCount: data }
+      return { connection: 'OK', productsCount: count ?? 0 }
     })
   }
 

@@ -187,7 +187,74 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ==========================================
--- 👥 CREAR USUARIOS DE PRUEBA
+-- � BOOTSTRAP DEL PRIMER ADMIN
+-- ==========================================
+
+-- Promueve a admin al usuario indicado SOLO si aún no existe ningún admin
+CREATE OR REPLACE FUNCTION public.bootstrap_first_admin(target_user_id UUID)
+RETURNS JSON AS $$
+DECLARE
+  admin_count INTEGER;
+  result JSON;
+BEGIN
+  SELECT COUNT(*) INTO admin_count FROM public.profiles WHERE role = 'admin';
+
+  IF admin_count > 0 THEN
+    RETURN json_build_object('success', false, 'message', 'Ya existen administradores. Usa promote_to_admin con permisos.');
+  END IF;
+
+  UPDATE public.profiles SET role = 'admin', updated_at = now() WHERE id = target_user_id;
+
+  IF FOUND THEN
+    result := json_build_object('success', true, 'message', 'Primer administrador creado exitosamente');
+  ELSE
+    result := json_build_object('success', false, 'message', 'Usuario no encontrado');
+  END IF;
+
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ==========================================
+-- 🧪 VERIFICACIÓN DE CONFIGURACIÓN DE USUARIOS
+-- ==========================================
+CREATE OR REPLACE FUNCTION public.check_users_setup()
+RETURNS JSON AS $$
+DECLARE
+  total_users INTEGER;
+  admin_users INTEGER;
+  active_users INTEGER;
+  regular_users INTEGER;
+  recommendations TEXT;
+  result JSON;
+BEGIN
+  SELECT COUNT(*) INTO total_users FROM public.profiles;
+  SELECT COUNT(*) INTO admin_users FROM public.profiles WHERE role = 'admin';
+  SELECT COUNT(*) INTO active_users FROM public.profiles WHERE is_active = true;
+  SELECT COUNT(*) INTO regular_users FROM public.profiles WHERE role = 'user';
+
+  IF admin_users = 0 AND total_users > 0 THEN
+    recommendations := 'Ejecuta bootstrap_first_admin para promover al primer usuario.';
+  ELSE
+    recommendations := 'Configuración correcta. Usa get_users_list para gestionar.';
+  END IF;
+
+  result := json_build_object(
+    'users_setup', json_build_object(
+      'total_users', total_users,
+      'admin_users', admin_users,
+      'regular_users', regular_users,
+      'active_users', active_users
+    ),
+    'recommendations', recommendations
+  );
+
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ==========================================
+-- �👥 CREAR USUARIOS DE PRUEBA
 -- ==========================================
 
 -- Nota: Para crear usuarios de prueba, ejecuta estos comandos en el SQL Editor de Supabase

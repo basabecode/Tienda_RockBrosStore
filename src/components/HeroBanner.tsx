@@ -17,14 +17,23 @@ const HeroBanner = () => {
       role="banner"
       aria-labelledby="hero-title"
     >
-      {/* Background Image */}
+      {/* Background Image - Responsive */}
       <div className="absolute inset-0">
+        {/* Imagen horizontal para desktop y tablet (oculta en móviles) */}
         <img
           src="/hero_ppal/66b1e90cef032.jpeg"
           alt="Equipamiento de ciclismo - imagen promocional"
-          className="w-full h-full object-cover"
+          className="hidden sm:block w-full h-full object-cover"
           loading="eager"
         />
+
+        <img
+          src="/hero_ppal/shop-01.jpg"
+          alt="Equipamiento de ciclismo - imagen promocional móvil"
+          className="block sm:hidden w-full h-full object-cover object-top brightness-150 contrast-90"
+          loading="eager"
+        />
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
       </div>
 

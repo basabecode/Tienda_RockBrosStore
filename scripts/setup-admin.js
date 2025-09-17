@@ -1,13 +1,44 @@
 /**
- * Script para configurar el primer usuario admin
- * Ejecutar después de aplicar el esquema admin-schema-simple.sql
+ * Script para configurar y gestionar usuarios admin
+ * Requiere aplicar previamente supabase/USER-MANAGEMENT-FIX.sql (incluye RPCs)
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath, pathToFileURL } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Cargar variables de entorno desde .env (opcional)
+function loadEnv() {
+  try {
+    const envPath = join(__dirname, '..', '.env')
+    const envContent = readFileSync(envPath, 'utf8')
+    const envVars = {}
+
+    envContent.split('\n').forEach(line => {
+      const [key, ...valueParts] = line.split('=')
+      if (key && key.startsWith('VITE_')) {
+        const value = valueParts.join('=').trim()
+        if (value) {
+          envVars[key] = value.replace(/['"]/g, '')
+        }
+      }
+    })
+
+    return envVars
+  } catch (error) {
+    return {}
+  }
+}
 
 // Configurar Supabase (usar las mismas variables de entorno)
-const supabaseUrl = process.env.VITE_SUPABASE_URL
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
+const env = loadEnv()
+const supabaseUrl = env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const supabaseAnonKey =
+  env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Variables de entorno de Supabase no encontradas')
@@ -23,11 +54,10 @@ async function setupFirstAdmin() {
   console.log('🔧 Configurando primer usuario admin...')
 
   try {
-    // 1. Verificar conexión a Supabase
-    const { data: testData, error: testError } = await supabase
+    // 1. Verificar conexión a Supabase (count exact con head)
+    const { count, error: testError } = await supabase
       .from('profiles')
-      .select('count')
-      .limit(1)
+      .select('*', { count: 'exact', head: true })
 
     if (testError) {
       console.error('❌ Error conectando a Supabase:', testError.message)
@@ -39,7 +69,7 @@ async function setupFirstAdmin() {
     // 2. Obtener todos los usuarios existentes
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, is_admin')
+      .select('id, email, full_name, role')
       .order('created_at', { ascending: true })
 
     if (profilesError) {
@@ -50,14 +80,12 @@ async function setupFirstAdmin() {
     console.log(`📊 Encontrados ${profiles.length} perfiles:`)
     profiles.forEach((profile, index) => {
       console.log(
-        `  ${index + 1}. ${profile.email} - Admin: ${
-          profile.is_admin ? '✅' : '❌'
-        }`
+        `  ${index + 1}. ${profile.email} - Rol: ${profile.role || 'user'}`
       )
     })
 
     // 3. Verificar si ya hay un admin
-    const existingAdmins = profiles.filter(p => p.is_admin)
+    const existingAdmins = profiles.filter(p => p.role === 'admin')
 
     if (existingAdmins.length > 0) {
       console.log('✅ Ya existen usuarios admin:')
@@ -67,7 +95,7 @@ async function setupFirstAdmin() {
       return
     }
 
-    // 4. Si no hay admins, promover al primer usuario
+    // 4. Si no hay admins, promover al primer usuario con RPC bootstrap (SECURO)
     if (profiles.length === 0) {
       console.log(
         '⚠️  No hay usuarios registrados. Registra un usuario primero.'
@@ -76,26 +104,35 @@ async function setupFirstAdmin() {
     }
 
     const firstUser = profiles[0]
-    console.log(`🔄 Promoviendo a ${firstUser.email} como administrador...`)
+    console.log(
+      `🔄 Promoviendo a ${firstUser.email} como administrador (bootstrap)...`
+    )
 
-    // 5. Actualizar el usuario a admin
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ is_admin: true })
-      .eq('id', firstUser.id)
+    // Llamar RPC que sólo permite bootstrap si no existen admins
+    const { data, error: rpcError } = await supabase.rpc(
+      'bootstrap_first_admin',
+      { target_user_id: firstUser.id }
+    )
 
-    if (updateError) {
-      console.error('❌ Error promoviendo usuario:', updateError.message)
+    if (rpcError) {
+      console.error('❌ Error en bootstrap_first_admin:', rpcError.message)
+      return
+    }
+
+    if (!data?.success) {
+      console.error(
+        `❌ No se pudo promover: ${data?.message || 'Error desconocido'}`
+      )
       return
     }
 
     console.log('✅ Usuario promovido exitosamente!')
     console.log(`🎉 ${firstUser.email} ahora es administrador`)
 
-    // 6. Verificar el cambio
+    // 5. Verificar el cambio
     const { data: updatedProfile, error: verifyError } = await supabase
       .from('profiles')
-      .select('email, is_admin')
+      .select('email, role')
       .eq('id', firstUser.id)
       .single()
 
@@ -106,7 +143,7 @@ async function setupFirstAdmin() {
 
     console.log('🔍 Verificación:')
     console.log(`  Email: ${updatedProfile.email}`)
-    console.log(`  Es Admin: ${updatedProfile.is_admin ? '✅' : '❌'}`)
+    console.log(`  Rol: ${updatedProfile.role}`)
   } catch (error) {
     console.error('💥 Error inesperado:', error.message)
   }
@@ -119,7 +156,7 @@ async function checkAdminStatus() {
   try {
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id, email, full_name, is_admin, created_at')
+      .select('id, email, full_name, role, created_at')
       .order('created_at', { ascending: true })
 
     if (error) {
@@ -140,7 +177,7 @@ async function checkAdminStatus() {
       console.log('   ────────────────────────────────')
     })
 
-    const adminCount = profiles.filter(p => p.is_admin).length
+    const adminCount = profiles.filter(p => p.role === 'admin').length
     console.log(
       `\n📈 Resumen: ${adminCount} administradores de ${profiles.length} usuarios totales`
     )
@@ -156,7 +193,7 @@ async function promoteUserByEmail(email) {
   try {
     const { data: profile, error: findError } = await supabase
       .from('profiles')
-      .select('id, email, is_admin')
+      .select('id, email, role')
       .eq('email', email)
       .single()
 
@@ -165,18 +202,26 @@ async function promoteUserByEmail(email) {
       return false
     }
 
-    if (profile.is_admin) {
+    if (profile.role === 'admin') {
       console.log(`✅ ${email} ya es administrador`)
       return true
     }
 
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ is_admin: true })
-      .eq('id', profile.id)
+    // Usar RPC segura que valida permisos
+    const { data, error: rpcError } = await supabase.rpc('promote_to_admin', {
+      target_user_id: profile.id,
+    })
 
-    if (updateError) {
-      console.error('❌ Error promoviendo usuario:', updateError.message)
+    if (rpcError) {
+      console.error('❌ Error promoviendo usuario:', rpcError.message)
+      return false
+    }
+
+    if (!data?.success) {
+      console.error(
+        '❌ No se pudo promover:',
+        data?.message || 'Error desconocido'
+      )
       return false
     }
 
@@ -192,7 +237,15 @@ async function promoteUserByEmail(email) {
 export { setupFirstAdmin, checkAdminStatus, promoteUserByEmail }
 
 // Si se ejecuta directamente, mostrar menú
-if (import.meta.url === `file://${process.argv[1]}`) {
+const isDirectRun = (() => {
+  try {
+    return import.meta.url === pathToFileURL(process.argv[1]).href
+  } catch {
+    return false
+  }
+})()
+
+if (isDirectRun) {
   const command = process.argv[2]
   const email = process.argv[3]
 
@@ -205,8 +258,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       break
     case 'promote':
       if (!email) {
+        console.error('❌ Proporciona un email. Ejemplos:')
         console.error(
-          '❌ Proporciona un email: npm run admin promote usuario@ejemplo.com'
+          '   node scripts/setup-admin.js promote usuario@ejemplo.com'
+        )
+        console.error(
+          '   npm run admin:promote -- usuario@ejemplo.com  (con NPM)'
         )
         break
       }
@@ -217,17 +274,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('')
       console.log('Comandos disponibles:')
       console.log(
-        '  npm run admin setup           - Configurar primer admin automáticamente'
+        '  npm run admin:setup             - Configurar primer admin automáticamente'
       )
       console.log(
-        '  npm run admin check            - Ver estado de todos los usuarios'
+        '  npm run admin:check             - Ver estado de todos los usuarios'
       )
       console.log(
-        '  npm run admin promote <email>  - Promover usuario específico a admin'
+        '  npm run admin:promote <email>   - Promover usuario específico a admin'
       )
       console.log('')
       console.log('Ejemplos:')
-      console.log('  npm run admin setup')
-      console.log('  npm run admin promote usuario@ejemplo.com')
+      console.log('  npm run admin:setup')
+      console.log('  npm run admin:promote -- usuario@ejemplo.com')
   }
 }

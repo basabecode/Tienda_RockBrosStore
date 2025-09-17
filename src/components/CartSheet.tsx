@@ -19,6 +19,7 @@ import {
   Truck,
 } from 'lucide-react'
 import { useCart } from '@/hooks/use-cart.tsx'
+import { useCartQuery } from '@/hooks/use-cart-query'
 import { useAuth } from '@/hooks/use-auth'
 import { AuthDialog } from './AuthDialog'
 import { toast } from '@/hooks/use-toast'

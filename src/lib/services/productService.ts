@@ -16,10 +16,13 @@ export class ProductService {
     let query = supabase.from('products').select('*')
 
     // Aplicar filtros
+    // Mapear status lógico a is_active en DB
     if (validatedFilters.status) {
-      query = query.eq('status', validatedFilters.status)
+      const isActive = validatedFilters.status === 'active'
+      query = query.eq('is_active', isActive)
     } else {
-      query = query.eq('status', 'active') // Por defecto solo productos activos
+      // Por defecto solo productos activos
+      query = query.eq('is_active', true)
     }
 
     if (validatedFilters.category) {
@@ -92,7 +95,7 @@ export class ProductService {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('status', 'active')
+      .eq('is_active', true)
       .eq('is_featured', true)
       .limit(limit)
 

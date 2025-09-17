@@ -9,14 +9,21 @@ import Index from './pages/Index'
 import Profile from './pages/Profile'
 import Orders from './pages/Orders'
 import Favorites from './pages/Favorites'
+import Addresses from './pages/Addresses'
+import { ChangePassword } from './pages/ChangePassword'
 import NotFound from './pages/NotFound'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
+import Login from './pages/Login'
 import ProductManagement from './pages/ProductManagement'
 import UserManagement from './pages/UserManagement'
 import SalesManagement from './pages/SalesManagement'
 import ProductDetail from './pages/ProductDetail'
-import AdminRoute from './components/AdminRoute'
+import TestProducts from './pages/TestProducts'
+import DashboardLayout from './components/DashboardLayout'
+import DashboardOverview from './pages/DashboardOverview'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import AdminEcommerceDashboard from './pages/AdminEcommerceDashboard'
 
 const App = () => {
   console.log('App component rendering')
@@ -31,40 +38,63 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/test-products" element={<TestProducts />} />
+
+                {/* Rutas del dashboard de usuario con layout anidado */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      {/* Si es admin, mostrar el panel unificado */}
+                      {window.localStorage.getItem('isAdmin') === 'true' ? (
+                        <AdminEcommerceDashboard />
+                      ) : (
+                        <DashboardLayout />
+                      )}
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DashboardOverview />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="addresses" element={<Addresses />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="favorites" element={<Favorites />} />
+                  <Route path="change-password" element={<ChangePassword />} />
+                </Route>
+
+                {/* Rutas de administrador */}
                 <Route
                   path="/admin"
                   element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminEcommerceDashboard />
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/admin/products"
                   element={
-                    <AdminRoute>
+                    <ProtectedRoute requireAdmin={true}>
                       <ProductManagement />
-                    </AdminRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/admin/users"
                   element={
-                    <AdminRoute>
+                    <ProtectedRoute requireAdmin={true}>
                       <UserManagement />
-                    </AdminRoute>
+                    </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/admin/sales"
                   element={
-                    <AdminRoute>
+                    <ProtectedRoute requireAdmin={true}>
                       <SalesManagement />
-                    </AdminRoute>
+                    </ProtectedRoute>
                   }
                 />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

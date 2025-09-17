@@ -1,25 +1,26 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Si no hay variables de entorno, usar valores de desarrollo
-const defaultUrl = 'https://placeholder.supabase.co'
-const defaultKey = 'placeholder-key'
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)'
+  )
+}
 
-// Cliente público SIN tipos estrictos (para evitar problemas de sincronización)
-export const supabase = createClient(
-  supabaseUrl || defaultUrl,
-  supabaseAnonKey || defaultKey,
+// Cliente público (no tipado) y fail-fast
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
     },
   }
-)
+) as SupabaseClient
 
-// Export para compatibilidad con código existente
 export function getSupabaseClient() {
   return supabase
 }

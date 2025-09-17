@@ -1,25 +1,29 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { listAddresses, addAddress } from '@/lib/userData';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { listAddresses, addAddress } from '@/lib/userData'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type Address = {
-  id: string;
-  label: string | null;
-  address: string;
-  city: string | null;
-  department: string | null;
-  postal_code: string | null;
-  phone: string | null;
-};
+  id: string
+  label: string | null
+  address: string
+  city: string | null
+  department: string | null
+  postal_code: string | null
+  phone: string | null
+}
 
 const Addresses = () => {
-  const { user } = useAuth();
-  const [items, setItems] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth()
+  const [items, setItems] = useState<Address[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isAddingNew, setIsAddingNew] = useState(false)
 
-  // formulario mínimo
+  // formulario mejorado
   const [form, setForm] = useState({
     label: '',
     address: '',
@@ -27,130 +31,255 @@ const Addresses = () => {
     department: '',
     postal_code: '',
     phone: '',
-  });
+  })
 
   const load = async () => {
     if (!user) {
-      setItems([]);
-      setLoading(false);
-      return;
+      setItems([])
+      setLoading(false)
+      return
     }
-    setLoading(true);
-    const { data, error } = await listAddresses(user.id);
+    setLoading(true)
+    const { data, error } = await listAddresses(user.id)
     if (error) {
-      setError(error.message);
-      setItems([]);
+      setError(error.message)
+      setItems([])
     } else {
-      setItems((data ?? []) as Address[]);
+      setItems((data ?? []) as Address[])
     }
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   useEffect(() => {
     const loadData = async () => {
-      await load();
-    };
-    loadData();
+      await load()
+    }
+    loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id])
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    const { error } = await addAddress(user.id, form);
-    if (error) {
-      setError(error.message);
-      return;
+    e.preventDefault()
+    if (!user) return
+    try {
+      // Adaptar la llamada a la función addAddress
+      const addressToInsert = {
+        user_id: user.id,
+        name: form.label,
+        street: form.address,
+        city: form.city,
+        state: form.department,
+        postal_code: form.postal_code,
+        phone: form.phone,
+        country: '', // Puedes ajustar el valor según tu lógica
+        is_default: false, // O true si quieres que sea la dirección principal
+      }
+      const { error } = await addAddress(addressToInsert)
+      if (error) {
+        setError(error.message)
+        return
+      }
+      setForm({
+        label: '',
+        address: '',
+        city: '',
+        department: '',
+        postal_code: '',
+        phone: '',
+      })
+      setIsAddingNew(false)
+      await load()
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Error al agregar dirección'
+      )
     }
-    setForm({
-      label: '',
-      address: '',
-      city: '',
-      department: '',
-      postal_code: '',
-      phone: '',
-    });
-    await load();
-  };
+  }
+
+  const handleDeleteAddress = (id: string) => {
+    setItems(items.filter(addr => addr.id !== id))
+  }
 
   return (
-    <div className="container mx-auto py-20">
-      <div className="max-w-3xl mx-auto bg-card p-6 rounded-lg shadow">
-        <h1 className="text-2xl font-bold mb-4">Direcciones</h1>
-        {loading && <p>Cargando...</p>}
-        {error && <p className="text-destructive">Error: {error}</p>}
-        {!loading && !error && (
-          <>
-            <ul className="space-y-3 mb-6">
-              {items.length === 0 && (
-                <li className="text-sm">No hay direcciones guardadas.</li>
-              )}
-              {items.map(a => (
-                <li key={a.id} className="text-sm">
-                  <div className="font-medium">{a.label || 'Sin etiqueta'}</div>
-                  <div className="text-muted-foreground">
-                    {a.address} {a.city && `- ${a.city}`}{' '}
-                    {a.department && `(${a.department})`}
-                  </div>
-                </li>
-              ))}
-            </ul>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            📍 Mis Direcciones
+          </h1>
+          <p className="text-gray-600">Gestiona tus direcciones de envío</p>
+        </div>
+        <Button
+          onClick={() => setIsAddingNew(true)}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          ➕ Nueva Dirección
+        </Button>
+      </div>
 
-            <form onSubmit={onSubmit} className="grid gap-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input
-                  className="input input-bordered p-2 rounded bg-background border"
-                  placeholder="Etiqueta (Casa, Oficina)"
-                  value={form.label}
-                  onChange={e => setForm({ ...form, label: e.target.value })}
-                />
-                <input
-                  className="input input-bordered p-2 rounded bg-background border"
-                  placeholder="Ciudad"
-                  value={form.city}
-                  onChange={e => setForm({ ...form, city: e.target.value })}
-                />
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error: {error}</p>
+        </div>
+      )}
+
+      {/* Formulario para nueva dirección */}
+      {isAddingNew && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Agregar Nueva Dirección</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="label">Etiqueta</Label>
+                  <Input
+                    id="label"
+                    placeholder="Casa, Oficina, etc."
+                    value={form.label}
+                    onChange={e => setForm({ ...form, label: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city">Ciudad</Label>
+                  <Input
+                    id="city"
+                    placeholder="Ciudad"
+                    value={form.city}
+                    onChange={e => setForm({ ...form, city: e.target.value })}
+                  />
+                </div>
               </div>
-              <input
-                className="input input-bordered p-2 rounded bg-background border"
-                placeholder="Dirección"
-                required
-                value={form.address}
-                onChange={e => setForm({ ...form, address: e.target.value })}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input
-                  className="input input-bordered p-2 rounded bg-background border"
-                  placeholder="Departamento"
-                  value={form.department}
-                  onChange={e =>
-                    setForm({ ...form, department: e.target.value })
-                  }
-                />
-                <input
-                  className="input input-bordered p-2 rounded bg-background border"
-                  placeholder="Código postal"
-                  value={form.postal_code}
-                  onChange={e =>
-                    setForm({ ...form, postal_code: e.target.value })
-                  }
-                />
-                <input
-                  className="input input-bordered p-2 rounded bg-background border"
-                  placeholder="Teléfono"
-                  value={form.phone}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
-                />
-              </div>
+
               <div>
-                <Button type="submit">Agregar dirección</Button>
+                <Label htmlFor="address">Dirección Completa</Label>
+                <Input
+                  id="address"
+                  placeholder="Calle, número, apartamento, etc."
+                  required
+                  value={form.address}
+                  onChange={e => setForm({ ...form, address: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="department">Departamento</Label>
+                  <Input
+                    id="department"
+                    placeholder="Departamento"
+                    value={form.department}
+                    onChange={e =>
+                      setForm({ ...form, department: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="postal_code">Código Postal</Label>
+                  <Input
+                    id="postal_code"
+                    placeholder="Código postal"
+                    value={form.postal_code}
+                    onChange={e =>
+                      setForm({ ...form, postal_code: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Teléfono</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Teléfono"
+                    value={form.phone}
+                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit">✅ Guardar Dirección</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddingNew(false)
+                    setForm({
+                      label: '',
+                      address: '',
+                      city: '',
+                      department: '',
+                      postal_code: '',
+                      phone: '',
+                    })
+                  }}
+                >
+                  ❌ Cancelar
+                </Button>
               </div>
             </form>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
+          </CardContent>
+        </Card>
+      )}
 
-export default Addresses;
+      {/* Lista de direcciones existentes */}
+      {!loading && !error && (
+        <div className="grid gap-4">
+          {items.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <div className="text-gray-400 text-6xl mb-4">📍</div>
+                <p className="text-gray-500 mb-4">
+                  No tienes direcciones guardadas
+                </p>
+                <Button onClick={() => setIsAddingNew(true)}>
+                  Agregar Primera Dirección
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            items.map(address => (
+              <Card key={address.id}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-2">
+                        {address.label || 'Sin etiqueta'}
+                      </h3>
+                      <p className="text-gray-600">{address.address}</p>
+                      <p className="text-gray-600">
+                        {address.city && `${address.city}`}
+                        {address.department && `, ${address.department}`}
+                        {address.postal_code && ` ${address.postal_code}`}
+                      </p>
+                      {address.phone && (
+                        <p className="text-gray-600">📞 {address.phone}</p>
+                      )}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteAddress(address.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      🗑️ Eliminar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Addresses

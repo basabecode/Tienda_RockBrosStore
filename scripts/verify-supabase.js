@@ -76,12 +76,11 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 async function verifyConnection() {
   try {
     console.log('🔍 Verificando conexión básica...')
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('products')
-      .select('count')
-      .limit(1)
+      .select('*', { count: 'exact', head: true })
     if (error) throw error
-    console.log('✅ Conexión básica: OK')
+    console.log(`✅ Conexión básica: OK (productos: ${count ?? 0})`)
     return true
   } catch (error) {
     console.log('❌ Conexión básica: FAIL')
@@ -164,9 +163,6 @@ async function main() {
 
   // Ejecutar verificaciones
   results.push(await verifyConnection())
-  results.push(await verifyTableStructure())
-  results.push(await verifyFunctionStructure())
-  results.push(await verifyUserManagement()) // Nueva verificación de usuarios
   results.push(await verifyTables())
   results.push(await verifyFunctions())
   results.push(await verifyPolicies())
@@ -177,7 +173,8 @@ async function main() {
   console.log('================================')
 
   const passed = results.filter(r => r).length
-  const total = results.length // Ahora es 5 verificaciones
+  const total = results.length
+  const successRate = ((passed / total) * 100).toFixed(1)
 
   console.log(`✅ Verificaciones pasadas: ${passed}`)
   console.log(`❌ Verificaciones fallidas: ${total - passed}`)

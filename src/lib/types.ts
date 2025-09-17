@@ -53,59 +53,86 @@ export interface Database {
         Row: {
           id: string
           created_at: string
-          title: string | null // Columna original para compatibilidad
           name: string
-          slug: string | null
+          slug: string
           description: string | null
           price: number
-          currency: string
-          stock: number
-          category: string | null
-          sizes: string[] | null
-          colors: string[] | null
+          compare_price: number | null
+          main_image: string | null
           images: string[] | null
+          category: string
+          brand: string
+          stock: number
+          min_stock: number | null
+          weight: number | null
+          dimensions: string | null
+          material: string | null
+          color: string | null
+          size: string | null
+          tags: string[] | null
           is_featured: boolean
-          status: 'active' | 'archived'
-          brand: string | null
-          specifications: ProductSpecifications | null
+          is_active: boolean
+          sort_order: number | null
+          rating: number | null
+          review_count: number | null
+          sold_count: number | null
+          updated_at: string
         }
         Insert: {
           id?: string
           created_at?: string
-          title?: string | null
           name: string
-          slug?: string | null
+          slug: string
           description?: string | null
           price: number
-          currency?: string
-          stock?: number
-          category?: string | null
-          sizes?: string[] | null
-          colors?: string[] | null
+          compare_price?: number | null
+          main_image?: string | null
           images?: string[] | null
+          category: string
+          brand: string
+          stock?: number
+          min_stock?: number | null
+          weight?: number | null
+          dimensions?: string | null
+          material?: string | null
+          color?: string | null
+          size?: string | null
+          tags?: string[] | null
           is_featured?: boolean
-          status?: 'active' | 'archived'
-          brand?: string | null
-          specifications?: ProductSpecifications | null
+          is_active?: boolean
+          sort_order?: number | null
+          rating?: number | null
+          review_count?: number | null
+          sold_count?: number | null
+          updated_at?: string
         }
         Update: {
           id?: string
           created_at?: string
-          title?: string | null
           name?: string
-          slug?: string | null
+          slug?: string
           description?: string | null
           price?: number
-          currency?: string
-          stock?: number
-          category?: string | null
-          sizes?: string[] | null
-          colors?: string[] | null
+          compare_price?: number | null
+          main_image?: string | null
           images?: string[] | null
+          category?: string
+          brand?: string
+          stock?: number
+          min_stock?: number | null
+          weight?: number | null
+          dimensions?: string | null
+          material?: string | null
+          color?: string | null
+          size?: string | null
+          tags?: string[] | null
           is_featured?: boolean
-          status?: 'active' | 'archived'
-          brand?: string | null
-          specifications?: ProductSpecifications | null
+          is_active?: boolean
+          sort_order?: number | null
+          rating?: number | null
+          review_count?: number | null
+          sold_count?: number | null
+          updated_at?: string
         }
       }
       addresses: {
@@ -271,7 +298,7 @@ export type OrderItemUpdate =
   Database['public']['Tables']['order_items']['Update']
 
 // Additional useful types
-export type ProductStatus = 'active' | 'archived'
+export type ProductStatus = boolean // is_active field
 export type OrderStatus =
   | 'pending'
   | 'confirmed'

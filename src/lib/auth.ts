@@ -3,7 +3,7 @@ import type { AuthUser, Profile } from './types'
 
 // Tipo extendido para usuario con perfil
 export interface User extends AuthUser {
-  role: 'admin' | 'user'
+  role: 'admin' | 'moderator' | 'user'
   profile?: Profile
 }
 
@@ -13,7 +13,7 @@ type ProfileFromDB = {
   email: string
   full_name: string | null
   phone: string | null
-  is_admin: boolean
+  role: 'user' | 'moderator' | 'admin'
   avatar_url: string | null
 }
 
@@ -102,10 +102,13 @@ export async function getCurrentUser(): Promise<{
 
 // Helper para crear usuario desde auth.users únicamente
 function createUserFromAuth(user: SupabaseUser): User {
-  const isAdmin =
-    user.user_metadata?.is_admin === true ||
-    user.app_metadata?.is_admin === true ||
-    (user.raw_user_meta_data && user.raw_user_meta_data.is_admin === true)
+  const roleFromMeta = ((): User['role'] => {
+    const v =
+      (user.user_metadata?.role as string) ||
+      (user.app_metadata?.role as string) ||
+      (user.raw_user_meta_data?.role as string)
+    return v === 'admin' || v === 'moderator' ? v : 'user'
+  })()
 
   // Función helper para obtener string desde metadata
   const getStringFromMeta = (value: unknown): string | null => {
@@ -120,13 +123,13 @@ function createUserFromAuth(user: SupabaseUser): User {
       getStringFromMeta(user.user_metadata?.full_name) ||
       user.email?.split('@')[0] ||
       null,
-    is_admin: isAdmin,
+    is_admin: roleFromMeta === 'admin',
     avatar_url: getStringFromMeta(user.user_metadata?.avatar_url) || null,
   }
 
   return {
     ...authUser,
-    role: isAdmin ? 'admin' : 'user',
+    role: roleFromMeta,
     profile: undefined,
   }
 }
@@ -149,17 +152,28 @@ function createUserFromProfile(
       profile.full_name ||
       getStringFromMeta(user.user_metadata?.full_name) ||
       null,
-    is_admin: profile.is_admin,
+    is_admin: profile.role === 'admin',
     avatar_url:
       profile.avatar_url ||
       getStringFromMeta(user.user_metadata?.avatar_url) ||
       null,
   }
 
+  const normalizedProfile = {
+    id: profile.id,
+    created_at: 'unknown',
+    email: profile.email ?? '',
+    full_name: profile.full_name ?? null,
+    phone: profile.phone ?? null,
+    // Compatibilidad con tipos antiguos: is_admin derivado del role
+    is_admin: profile.role === 'admin',
+    avatar_url: profile.avatar_url ?? null,
+  } as unknown as Profile
+
   return {
     ...authUser,
-    role: profile.is_admin ? 'admin' : 'user',
-    profile: profile as Profile,
+    role: profile.role,
+    profile: normalizedProfile,
   }
 }
 
@@ -355,7 +369,7 @@ export async function updateProfile(updates: Partial<Profile>) {
 
     const { data, error } = await supabase
       .from('profiles')
-      .update(updates)
+      .update(updates as Record<string, unknown>)
       .eq('id', user.id)
       .select()
       .single()

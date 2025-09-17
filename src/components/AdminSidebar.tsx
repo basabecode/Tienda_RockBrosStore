@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -18,6 +18,9 @@ import {
   Shield,
   TrendingUp,
   UserCheck,
+  ArrowLeft,
+  Home,
+  Store,
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -25,10 +28,19 @@ interface AdminSidebarProps {
   onToggle: () => void
 }
 
+interface MenuItem {
+  title: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  description: string
+  disabled?: boolean
+}
+
 const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
   const location = useLocation()
+  const navigate = useNavigate()
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       title: 'Dashboard',
       href: '/admin',
@@ -36,34 +48,36 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
       description: 'Vista general del sistema',
     },
     {
-      title: 'Productos',
+      title: 'Gestión de Productos',
       href: '/admin/products',
       icon: Package,
-      description: 'Gestionar catálogo de productos',
+      description: 'Crear, editar y eliminar productos',
     },
     {
-      title: 'Usuarios',
+      title: 'Inventario',
+      href: '/admin/inventory',
+      icon: TrendingUp,
+      description: 'Control de stock y existencias',
+      disabled: true, // Pendiente de implementar
+    },
+    {
+      title: 'Gestión de Usuarios',
       href: '/admin/users',
       icon: Users,
-      description: 'Administrar usuarios y roles',
+      description: 'Validar y administrar usuarios',
     },
     {
-      title: 'Ventas',
+      title: 'Revisión de Compras',
       href: '/admin/sales',
       icon: ShoppingCart,
-      description: 'Ver pedidos y ventas',
+      description: 'Pedidos, ventas y transacciones',
     },
     {
       title: 'Estadísticas',
       href: '/admin/analytics',
       icon: BarChart3,
-      description: 'Análisis y reportes',
-    },
-    {
-      title: 'Configuración',
-      href: '/admin/settings',
-      icon: Settings,
-      description: 'Configurar el sistema',
+      description: 'Análisis y reportes detallados',
+      disabled: true, // Pendiente de implementar
     },
   ]
 
@@ -96,11 +110,11 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Bike className="w-5 h-5 text-white" />
+                <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">RockBros</h2>
-                <p className="text-xs text-gray-500">Panel Admin</p>
+                <h2 className="text-lg font-bold text-gray-900">Panel Admin</h2>
+                <p className="text-xs text-gray-500">RockBros Store</p>
               </div>
             </div>
             <Button
@@ -113,12 +127,48 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
             </Button>
           </div>
 
+          {/* Quick Access - Return to Store */}
+          <div className="p-4 border-b bg-gray-50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="w-full justify-start bg-white hover:bg-gray-100"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver a la Tienda
+            </Button>
+          </div>
+
           {/* Navigation */}
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-2">
               {menuItems.map(item => {
                 const Icon = item.icon
                 const active = isActive(item.href)
+                const isDisabled = item.disabled
+
+                if (isDisabled) {
+                  return (
+                    <div
+                      key={item.href}
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0 text-gray-400" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-400">
+                          {item.title}
+                        </div>
+                        <div className="text-xs text-gray-400 truncate">
+                          {item.description}
+                        </div>
+                        <div className="text-xs text-orange-500 mt-1">
+                          Próximamente
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
 
                 return (
                   <Link
@@ -198,18 +248,30 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => {
-                // Handle logout
-                window.location.href = '/'
-              }}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Cerrar Sesión
-            </Button>
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-gray-600 hover:text-gray-800"
+                onClick={() => navigate('/dashboard')}
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Mi Cuenta Personal
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => {
+                  // Handle logout properly
+                  window.location.href = '/'
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Cerrar Sesión
+              </Button>
+            </div>
           </div>
         </div>
       </div>

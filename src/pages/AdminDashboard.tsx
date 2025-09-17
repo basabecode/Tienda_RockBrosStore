@@ -1,3 +1,24 @@
+// Tipos locales para resultados de selects (evitar any/never)
+type OrderRow = {
+  id: string
+  total: number | string
+  status: string
+  created_at: string
+  profiles?:
+    | { id: string; full_name?: string | null; email?: string | null }
+    | Array<{ id: string; full_name?: string | null; email?: string | null }>
+}
+type RecentOrder = {
+  id: string
+  total: number | string
+  status: string
+  created_at: string
+  profiles?: {
+    id: string
+    full_name?: string | null
+    email?: string | null
+  } | null
+}
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -35,7 +56,7 @@ const AdminDashboard = () => {
       // Orders stats
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
-        .select('total_amount, status, created_at')
+        .select('total, status, created_at')
         .gte(
           'created_at',
           new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -52,10 +73,14 @@ const AdminDashboard = () => {
 
       // Calculate metrics
       const totalSales =
-        ordersData?.reduce((sum, order) => sum + order.total_amount, 0) || 0
-      const totalOrders = ordersData?.length || 0
+        (
+          ordersData as Array<{ total: number | string; status: string }> | null
+        )?.reduce((sum, order) => sum + Number(order.total || 0), 0) || 0
+      const totalOrders = (ordersData as unknown[] | null)?.length || 0
       const deliveredOrders =
-        ordersData?.filter(order => order.status === 'delivered').length || 0
+        (ordersData as Array<{ status: string }> | null)?.filter(
+          order => order.status === 'delivered'
+        ).length || 0
 
       return {
         productsCount: productsCount || 0,
@@ -78,7 +103,7 @@ const AdminDashboard = () => {
         .select(
           `
           id,
-          total_amount,
+          total,
           status,
           created_at,
           profiles:user_id (
@@ -92,11 +117,14 @@ const AdminDashboard = () => {
 
       if (error) throw error
       // Ensure profiles is always an object, not an array
-      return data?.map(order => ({
-        ...order,
+      return (data as Array<OrderRow> | null)?.map<RecentOrder>(order => ({
+        id: order.id,
+        total: order.total,
+        status: order.status,
+        created_at: order.created_at,
         profiles: Array.isArray(order.profiles)
-          ? order.profiles[0]
-          : order.profiles,
+          ? order.profiles[0] ?? null
+          : order.profiles ?? null,
       }))
     },
   })
@@ -114,14 +142,14 @@ const AdminDashboard = () => {
         .limit(5)
 
       if (error) throw error
-      return data
+      return data as Array<{ id: string; name: string; stock: number }>
     },
   })
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'COP',
     }).format(price)
   }
 
@@ -293,7 +321,7 @@ const AdminDashboard = () => {
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-green-600">
-                            {formatPrice(order.total_amount)}
+                            {formatPrice(Number(order.total))}
                           </p>
                           <Badge className={getStatusColor(order.status)}>
                             {order.status}

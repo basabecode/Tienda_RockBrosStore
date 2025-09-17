@@ -21,7 +21,7 @@ export function useAuth() {
   React.useEffect(() => {
     let isMounted = true
     let retryCount = 0
-    const maxRetries = 3
+    const maxRetries = 2 // Reducir reintentos
 
     // Función para obtener usuario con reintentos
     const getAndSetUser = async () => {
@@ -34,7 +34,7 @@ export function useAuth() {
           console.error('Error obteniendo usuario:', error)
           if (retryCount < maxRetries) {
             retryCount++
-            setTimeout(getAndSetUser, 1000 * retryCount) // Retry con backoff
+            setTimeout(getAndSetUser, 500 * retryCount) // Reducir tiempo de backoff
             return
           }
         }
@@ -69,13 +69,13 @@ export function useAuth() {
 
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('Usuario se logueó, obteniendo perfil...')
-          // Pequeño delay para asegurar que el perfil se creó
+          // Reducir delay para mejorar UX
           setTimeout(async () => {
             if (!isMounted) return
             const { user } = await getCurrentUser()
             setUser(user)
             setLoading(false)
-          }, 500)
+          }, 100)
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           console.log('Token renovado')
           // Solo actualizar si no tenemos usuario o si cambió
@@ -181,9 +181,15 @@ export function useAuth() {
   const signOut = React.useCallback(async () => {
     setLoading(true)
     try {
+      // Limpiar cache antes del logout
+      clearUserCache()
+
       const { error } = await authSignOut()
       if (!error) {
         setUser(null)
+        // Limpiar todo el localStorage relacionado
+        localStorage.removeItem('cart')
+        localStorage.removeItem('favorites')
       }
       setLoading(false)
       return { error }

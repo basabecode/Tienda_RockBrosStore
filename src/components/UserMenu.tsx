@@ -12,22 +12,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
   User as UserIcon,
-  ShoppingBag,
-  Heart,
-  MapPin,
   LogOut,
   Shield,
+  Home,
   Package,
-  Users,
+  MapPin,
+  Heart,
+  Key,
+  LayoutDashboard,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/hooks/use-toast'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import type { User } from '@/lib/auth'
 
 export function UserMenu() {
   const { user, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   if (!user) return null
 
@@ -56,57 +58,43 @@ export function UserMenu() {
       .slice(0, 2)
   }
 
-  const menuItems = [
+  // Menú de navegación principal para clientes
+  const userMenuItems = [
+    {
+      icon: LayoutDashboard,
+      label: 'Panel Principal',
+      description: 'Vista general de tu cuenta',
+      path: '/dashboard',
+    },
     {
       icon: UserIcon,
       label: 'Mi Perfil',
-      href: '/profile',
-      description: 'Información personal y configuración',
+      description: 'Datos personales y configuración',
+      path: '/dashboard/profile',
     },
     {
-      icon: ShoppingBag,
+      icon: MapPin,
+      label: 'Mis Direcciones',
+      description: 'Gestionar direcciones de envío',
+      path: '/dashboard/addresses',
+    },
+    {
+      icon: Package,
       label: 'Mis Pedidos',
-      href: '/orders',
-      description: 'Historial de compras y seguimiento',
+      description: 'Historial y estado de compras',
+      path: '/dashboard/orders',
     },
     {
       icon: Heart,
       label: 'Favoritos',
-      href: '/favorites',
       description: 'Productos guardados',
+      path: '/dashboard/favorites',
     },
     {
-      icon: MapPin,
-      label: 'Direcciones',
-      href: '/addresses',
-      description: 'Direcciones de envío',
-    },
-  ]
-
-  const adminItems = [
-    {
-      icon: Shield,
-      label: 'Dashboard Admin',
-      href: '/admin',
-      description: 'Panel de administración',
-    },
-    {
-      icon: Package,
-      label: 'Productos',
-      href: '/admin/products',
-      description: 'Gestionar catálogo',
-    },
-    {
-      icon: ShoppingBag,
-      label: 'Pedidos',
-      href: '/admin/orders',
-      description: 'Gestionar pedidos',
-    },
-    {
-      icon: Users,
-      label: 'Usuarios',
-      href: '/admin/users',
-      description: 'Gestionar usuarios',
+      icon: Key,
+      label: 'Seguridad',
+      description: 'Cambiar contraseña',
+      path: '/dashboard/change-password',
     },
   ]
 
@@ -148,53 +136,76 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {/* Opciones de usuario */}
+        {/* Navegación rápida - no duplicar si ya estamos en esa página */}
+        {!location.pathname.startsWith('/dashboard') && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <div className="flex items-center space-x-3 w-full">
+              <Home className="h-4 w-4 text-muted-foreground" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Volver al Inicio</span>
+                <span className="text-xs text-muted-foreground">
+                  Ir a la tienda principal
+                </span>
+              </div>
+            </div>
+          </DropdownMenuItem>
+        )}
+
+        {/* Menú principal de navegación */}
         <div className="py-1">
-          {menuItems.map(item => (
+          {userMenuItems.map(item => {
+            const Icon = item.icon
+            const isActive = location.pathname === item.path
+
+            return (
+              <DropdownMenuItem
+                key={item.path}
+                className={`cursor-pointer ${
+                  isActive ? 'bg-primary/10 text-primary' : ''
+                }`}
+                onClick={() => navigate(item.path)}
+              >
+                <div className="flex items-start space-x-3 w-full">
+                  <Icon
+                    className={`h-4 w-4 mt-0.5 ${
+                      isActive ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  />
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-sm font-medium">{item.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.description}
+                    </span>
+                  </div>
+                </div>
+              </DropdownMenuItem>
+            )
+          })}
+        </div>
+
+        {/* Acceso admin separado */}
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              key={item.href}
               className="cursor-pointer"
-              onClick={() => navigate(item.href)}
+              onClick={() => navigate('/admin')}
             >
-              <div className="flex items-start space-x-3 w-full">
-                <item.icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="flex flex-col space-y-1">
-                  <span className="text-sm font-medium">{item.label}</span>
+              <div className="flex items-center space-x-3 w-full">
+                <Shield className="h-4 w-4 text-blue-600" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-blue-700">
+                    Panel de Administración
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    {item.description}
+                    Gestionar productos y usuarios
                   </span>
                 </div>
               </div>
             </DropdownMenuItem>
-          ))}
-        </div>
-
-        {/* Opciones de administrador */}
-        {isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-              ADMINISTRACIÓN
-            </DropdownMenuLabel>
-            <div className="py-1">
-              {adminItems.map(item => (
-                <DropdownMenuItem
-                  key={item.href}
-                  className="cursor-pointer"
-                  onClick={() => navigate(item.href)}
-                >
-                  <div className="flex items-start space-x-3 w-full">
-                    <item.icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div className="flex flex-col space-y-1">
-                      <span className="text-sm font-medium">{item.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {item.description}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </div>
           </>
         )}
 
