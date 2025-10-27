@@ -63,6 +63,22 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        // RockBros Corporate Brand Colors
+        rockbros: {
+          'gray-medium': '#656565', // Textos secundarios, borders sutiles
+          'gray-dark': '#383838', // Textos principales, navegación
+          'green-neon': '#0FFF95', // Accents, highlights, CTAs secundarios
+          'green-forest': '#06BA63', // Botones primarios, éxito, confirmación
+          black: '#000000', // Texto principal, contrastes máximos
+        },
+        // Semantic brand colors for easier usage
+        brand: {
+          primary: '#06BA63', // Verde bosque - Principal
+          secondary: '#0FFF95', // Verde neón - Secundario/Accents
+          neutral: '#656565', // Gris medio - Neutro
+          dark: '#383838', // Gris oscuro - Oscuro
+          contrast: '#000000', // Negro - Máximo contraste
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

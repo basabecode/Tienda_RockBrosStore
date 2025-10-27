@@ -2,9 +2,9 @@ import Header from '@/components/Header'
 import HeroBanner from '@/components/HeroBanner'
 import ProductGrid from '@/components/ProductGrid'
 import Categories from '@/components/Categories'
-import Education from '@/components/Education'
 import Brands from '@/components/Brands'
 import Footer from '@/components/Footer'
+import ImprovementNotification from '@/components/ImprovementNotification'
 
 const Index = () => {
   console.log('Index page rendering')
@@ -15,10 +15,10 @@ const Index = () => {
         <HeroBanner />
         <ProductGrid />
         <Categories />
-        <Education />
         <Brands />
       </main>
       <Footer />
+      <ImprovementNotification />
     </div>
   )
 }

@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Star, Shield, Truck } from 'lucide-react'
-import heroBanner from '@/assets/hero-banner.jpg'
+import { ArrowRight, Star, UserPlus } from 'lucide-react'
+import { AuthDialog } from './AuthDialog'
 
 const HeroBanner = () => {
-  const scrollToShop = () => {
+  const scrollToProducts = () => {
     const element = document.getElementById('shop')
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
@@ -70,42 +70,29 @@ const HeroBanner = () => {
             ciclistas urbanos y de montaña. Envíos a toda Colombia.
           </p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Solo dos botones */}
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12 animate-bounce-soft">
             <Button
-              variant="hero"
               size="lg"
-              onClick={scrollToShop}
-              className="text-lg px-8 py-4 min-w-[200px]"
-              aria-label="Explorar colección de productos"
+              onClick={scrollToProducts}
+              className="button-primary-glow text-lg px-8 py-4 min-w-[200px]"
+              aria-label="Ver más productos de ciclismo"
             >
-              Comprar ahora
+              Ver más
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-lg px-8 py-4 bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm min-w-[200px]"
-              aria-label="Ver video demostrativo"
-            >
-              Ver demostración
-            </Button>
-          </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-            <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <Shield className="h-6 w-6 text-green-400" />
-              <span className="font-medium">Garantía limitada</span>
-            </div>
-            <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <Truck className="h-6 w-6 text-blue-400" />
-              <span className="font-medium">Envíos nacionales</span>
-            </div>
-            <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <Star className="h-6 w-6 text-yellow-400" />
-              <span className="font-medium">Soporte especializado</span>
-            </div>
+            <AuthDialog>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-4 bg-gris-medio/20 border-verde-neon/30 text-white hover:bg-verde-neon/20 backdrop-blur-sm min-w-[200px] transition-all duration-300"
+                aria-label="Suscribirse o iniciar sesión"
+              >
+                <UserPlus className="mr-2 h-5 w-5" />
+                Suscríbete
+              </Button>
+            </AuthDialog>
           </div>
         </div>
       </div>

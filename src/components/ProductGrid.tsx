@@ -186,7 +186,7 @@ export default function ProductGrid() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div id="shop" className="container mx-auto px-4 py-8">
       {/* Header con búsqueda y filtros */}
       <div className="mb-8">
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
@@ -326,7 +326,7 @@ export default function ProductGrid() {
 
       {/* Contador de productos */}
       <div className="mb-6">
-        <p className="text-gray-600">
+        <p className="text-body-dark">
           {products.length} producto{products.length !== 1 ? 's' : ''}{' '}
           encontrado{products.length !== 1 ? 's' : ''}
         </p>
@@ -335,9 +335,13 @@ export default function ProductGrid() {
       {/* Grid de productos */}
       {products.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No se encontraron productos</p>
+          <p className="text-muted-dark mb-4">No se encontraron productos</p>
           {hasActiveFilters && (
-            <Button onClick={clearFilters} variant="outline">
+            <Button
+              onClick={clearFilters}
+              variant="outline"
+              className="button-primary-glow"
+            >
               Limpiar filtros
             </Button>
           )}
@@ -347,12 +351,12 @@ export default function ProductGrid() {
           {products.map(product => (
             <Card
               key={product.id}
-              className="group cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden bg-white border"
+              className="card-dark-enhanced group cursor-pointer hover:shadow-large transition-all duration-300 overflow-hidden"
               onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
             >
               <div
-                className="relative overflow-hidden bg-gray-50 flex items-center justify-center"
+                className="relative overflow-hidden bg-gray-800/50 flex items-center justify-center"
                 style={{ minHeight: '200px', maxHeight: '280px' }}
               >
                 <img
@@ -373,12 +377,20 @@ export default function ProductGrid() {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
                   {product.is_featured && (
-                    <Badge variant="default" className="bg-blue-500">
+                    <Badge
+                      variant="default"
+                      className="bg-brand-secondary text-black font-semibold shadow-lg"
+                    >
                       Destacado
                     </Badge>
                   )}
                   {product.stock === 0 && (
-                    <Badge variant="destructive">Agotado</Badge>
+                    <Badge
+                      variant="destructive"
+                      className="bg-red-600 text-white"
+                    >
+                      Agotado
+                    </Badge>
                   )}
                 </div>
 
@@ -390,8 +402,8 @@ export default function ProductGrid() {
                 >
                   <Button
                     size="sm"
-                    variant="secondary"
-                    className="h-8 w-8 p-0"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 bg-gris-medio/20 hover:bg-verde-neon/20 backdrop-blur-sm border border-gris-medio/30"
                     onClick={e => {
                       e.stopPropagation()
                       handleToggleFavorite(product.id)
@@ -401,21 +413,21 @@ export default function ProductGrid() {
                       className={`h-4 w-4 ${
                         isFavorite(product.id)
                           ? 'fill-red-500 text-red-500'
-                          : ''
+                          : 'text-white hover:text-verde-neon'
                       }`}
                     />
                   </Button>
 
                   <Button
                     size="sm"
-                    variant="secondary"
-                    className="h-8 w-8 p-0"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 bg-gris-medio/20 hover:bg-verde-neon/20 backdrop-blur-sm border border-gris-medio/30"
                     onClick={e => {
                       e.stopPropagation()
                       handleViewDetails(product.id)
                     }}
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4 text-white hover:text-verde-neon" />
                   </Button>
                 </div>
               </div>
@@ -423,25 +435,25 @@ export default function ProductGrid() {
               <CardContent className="p-4">
                 <div className="space-y-2">
                   {/* Marca */}
-                  <p className="text-sm text-gray-500 uppercase tracking-wide">
+                  <p className="text-sm text-gris-medio uppercase tracking-wide">
                     {product.brand}
                   </p>
 
                   {/* Nombre del producto */}
-                  <h3 className="font-semibold text-lg leading-tight line-clamp-2">
+                  <h3 className="text-heading-dark text-lg leading-tight line-clamp-2">
                     {product.name}
                   </h3>
 
                   {/* Precio */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-red-500">
-                      ${product.price.toLocaleString('es-CO')} COP
+                    <span className="price-primary text-lg">
+                      ${product.price.toLocaleString('es-CO')}
                     </span>
                   </div>
 
                   {/* Botón agregar al carrito */}
                   <Button
-                    className="w-full mt-4"
+                    className="button-primary-glow w-full mt-4"
                     onClick={e => {
                       e.stopPropagation()
                       handleAddToCart(product.id)

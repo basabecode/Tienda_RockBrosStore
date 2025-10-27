@@ -1,0 +1,46 @@
+<!-- Placeholder SVG para categoría Bolsos -->
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo gradiente -->
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="300" height="300" fill="url(#grad2)"/>
+
+  <!-- Patrón de fondo -->
+  <g opacity="0.1">
+    <polygon points="50,50 70,30 90,50 70,70" fill="white"/>
+    <polygon points="210,80 230,60 250,80 230,100" fill="white"/>
+    <polygon points="80,220 100,200 120,220 100,240" fill="white"/>
+    <polygon points="220,210 240,190 260,210 240,230" fill="white"/>
+  </g>
+
+  <!-- Icono principal -->
+  <g transform="translate(150, 150)">
+    <!-- Mochila -->
+    <rect x="-35" y="-30" width="70" height="60" rx="10" fill="white" opacity="0.9"/>
+
+    <!-- Correas -->
+    <rect x="-45" y="-20" width="8" height="40" rx="4" fill="white" opacity="0.7"/>
+    <rect x="37" y="-20" width="8" height="40" rx="4" fill="white" opacity="0.7"/>
+
+    <!-- Bolsillo frontal -->
+    <rect x="-25" y="-20" width="50" height="25" rx="5" fill="white" opacity="0.6"/>
+
+    <!-- Cremallera -->
+    <line x1="-20" y1="-15" x2="20" y2="-15" stroke="#a855f7" stroke-width="2"/>
+    <circle cx="20" cy="-15" r="3" fill="#a855f7"/>
+
+    <!-- Detalles -->
+    <circle cx="-20" cy="0" r="3" fill="#a855f7"/>
+    <circle cx="20" cy="0" r="3" fill="#a855f7"/>
+  </g>
+
+  <!-- Texto -->
+  <text x="150" y="250" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">
+    BOLSOS
+  </text>
+</svg>
