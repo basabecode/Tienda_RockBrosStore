@@ -85,51 +85,46 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
   // Cargar favoritos desde localStorage al inicializar
   useEffect(() => {
-    if (isAuthenticated && user) {
-      try {
-        const savedFavorites = localStorage.getItem(`favorites_${user.id}`)
-        if (savedFavorites) {
-          const items = JSON.parse(savedFavorites)
-          dispatch({ type: 'LOAD_FAVORITES', payload: items })
-        }
-      } catch (error) {
-        console.error('Error loading favorites from localStorage:', error)
+    try {
+      const storageKey =
+        isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
+
+      const savedFavorites = localStorage.getItem(storageKey)
+      if (savedFavorites) {
+        const items = JSON.parse(savedFavorites)
+        dispatch({ type: 'LOAD_FAVORITES', payload: items })
       }
-    } else {
-      // Limpiar favoritos si no está autenticado
-      dispatch({ type: 'CLEAR_FAVORITES' })
+    } catch (error) {
+      console.error('Error loading favorites from localStorage:', error)
     }
   }, [isAuthenticated, user])
 
   // Guardar favoritos en localStorage cuando cambien
   useEffect(() => {
-    if (isAuthenticated && user) {
-      try {
-        localStorage.setItem(
-          `favorites_${user.id}`,
-          JSON.stringify(state.items)
-        )
-      } catch (error) {
-        console.error('Error saving favorites to localStorage:', error)
-      }
+    try {
+      const storageKey =
+        isAuthenticated && user ? `favorites_${user.id}` : 'favorites_guest'
+
+      localStorage.setItem(storageKey, JSON.stringify(state.items))
+    } catch (error) {
+      console.error('Error saving favorites to localStorage:', error)
     }
   }, [state.items, isAuthenticated, user])
 
   const addFavorite = (item: FavoriteItem) => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Inicia sesión',
-        description: 'Necesitas iniciar sesión para agregar favoritos',
-        variant: 'destructive',
-      })
-      return
-    }
-
     dispatch({ type: 'ADD_FAVORITE', payload: item })
-    toast({
-      title: 'Agregado a favoritos',
-      description: `${item.name} se ha agregado a tus favoritos`,
-    })
+
+    const toastMessage = !isAuthenticated
+      ? {
+          title: 'Agregado a favoritos temporales',
+          description: `${item.name} se guardó temporalmente. Inicia sesión para guardar permanentemente.`,
+        }
+      : {
+          title: 'Agregado a favoritos',
+          description: `${item.name} se ha agregado a tus favoritos`,
+        }
+
+    toast(toastMessage)
   }
 
   const removeFavorite = (id: string) => {

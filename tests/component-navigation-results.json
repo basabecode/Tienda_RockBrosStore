@@ -1,0 +1,116 @@
+{
+  "timestamp": "2025-10-29T19:01:42.192Z",
+  "overallScore": 95,
+  "components": [
+    {
+      "component": "components/Header.tsx",
+      "exists": true,
+      "score": 6,
+      "maxScore": 6,
+      "percentage": 100,
+      "features": {
+        "Navigation Items": true,
+        "User Menu": true,
+        "Cart/Shopping": true,
+        "Authentication": true,
+        "Navigation Handler": true,
+        "Responsive Menu": true
+      },
+      "message": "6/6 características encontradas"
+    },
+    {
+      "component": "components/ClientUserMenu.tsx",
+      "exists": true,
+      "score": 6,
+      "maxScore": 6,
+      "percentage": 100,
+      "features": {
+        "User Routes": true,
+        "Profile Link": true,
+        "Orders Link": true,
+        "Favorites Link": true,
+        "Logout Function": true,
+        "Navigation Handler": true
+      },
+      "message": "6/6 características encontradas"
+    },
+    {
+      "component": "components/AdminUserMenu.tsx",
+      "exists": true,
+      "score": 6,
+      "maxScore": 6,
+      "percentage": 100,
+      "features": {
+        "Admin Routes": true,
+        "Dashboard Link": true,
+        "Product Management": true,
+        "User Management": true,
+        "Personal Account Access": true,
+        "Admin Badge": true
+      },
+      "message": "6/6 características encontradas"
+    },
+    {
+      "component": "components/DashboardLayout.tsx",
+      "exists": true,
+      "score": 4,
+      "maxScore": 5,
+      "percentage": 80,
+      "features": {
+        "Header Component": true,
+        "Sidebar/Navigation": true,
+        "Outlet/Children": true,
+        "Breadcrumbs": true,
+        "Protected Area": false
+      },
+      "message": "4/5 características encontradas"
+    },
+    {
+      "component": "components/AdminDashboardLayout.tsx",
+      "exists": true,
+      "score": 5,
+      "maxScore": 5,
+      "percentage": 100,
+      "features": {
+        "Admin Sidebar": true,
+        "Header Component": true,
+        "Outlet/Children": true,
+        "Admin Protection": true,
+        "Navigation Structure": true
+      },
+      "message": "5/5 características encontradas"
+    },
+    {
+      "component": "pages/DashboardOverview.tsx",
+      "exists": true,
+      "score": 6,
+      "maxScore": 6,
+      "percentage": 100,
+      "features": {
+        "Navigation Links": true,
+        "Profile Navigation": true,
+        "Orders Navigation": true,
+        "Favorites Navigation": true,
+        "User Data Display": true,
+        "Action Buttons": true
+      },
+      "message": "6/6 características encontradas"
+    },
+    {
+      "component": "pages/AdminEcommerceDashboard.tsx",
+      "exists": true,
+      "score": 5,
+      "maxScore": 6,
+      "percentage": 83,
+      "features": {
+        "Admin Check": true,
+        "KPI Cards": true,
+        "Error Boundaries": false,
+        "Loading States": true,
+        "Navigation Links": true,
+        "Data Queries": true
+      },
+      "message": "5/6 características encontradas"
+    }
+  ]
+}

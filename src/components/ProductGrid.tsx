@@ -1,73 +1,146 @@
-﻿import { useState, useMemo } from 'react'
+﻿import React, { useState } from 'react'
 import { useProductsQuery } from '@/hooks/useProductsQuery'
 import { useCart } from '@/hooks/use-cart'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useUnifiedFavorites } from '@/hooks/useUnifiedFavorites'
 import { useAuth } from '@/hooks/use-auth'
+import { useSearch } from '@/hooks/use-search-context'
+import { useViewedProducts } from '@/hooks/use-viewed-products'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import {
   ShoppingCart,
   Heart,
   Eye,
-  Search,
-  Filter,
-  X,
   Loader2,
+  Package,
+  Filter as FilterIcon,
+  X,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
-
-interface ProductFilters {
-  search: string
-  category: string
-  brand: string
-  minPrice: number
-  maxPrice: number
-}
+import SimpleSearchBar from '@/components/SimpleSearchBar'
+import { RecentlyViewed } from '@/components/RecentlyViewed'
+import type { Product } from '@/lib/types'
 
 export default function ProductGrid() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user } = useAuth()
   const { addItem } = useCart()
-  const { favorites, toggleFavorite, isFavorite } = useFavorites()
+  const { favorites, addFavorite, removeFavorite, isFavorite } =
+    useUnifiedFavorites()
+  const { searchTerm, setSearchTerm } = useSearch()
+  const { addViewedProduct } = useViewedProducts()
 
-  const [filters, setFilters] = useState<ProductFilters>({
-    search: '',
-    category: '',
-    brand: '',
-    minPrice: 0,
-    maxPrice: 1000000,
-  })
+  // Estados locales
   const [showFilters, setShowFilters] = useState(false)
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
 
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [productsPerPage] = useState(12) // 12 productos por página
+
+  // Estados de filtros locales
+  const [filters, setFilters] = useState({
+    category: '',
+    brand: '',
+    minPrice: undefined as number | undefined,
+    maxPrice: undefined as number | undefined,
+  })
+
+  // Query de productos con paginación server-side
   const {
-    data: products = [],
+    data: productResult,
     isLoading,
     error,
     refetch,
-  } = useProductsQuery(filters)
+  } = useProductsQuery({
+    ...filters,
+    search: searchTerm,
+    page: currentPage,
+    pageSize: productsPerPage,
+  })
 
-  // Obtener categorías y marcas únicas
-  const categories = useMemo(() => {
-    const cats = [...new Set(products.map(p => p.category))]
-    return cats.sort()
-  }, [products])
+  // Extraer datos del resultado paginado
+  const products = React.useMemo(
+    () => productResult?.data || [],
+    [productResult?.data]
+  )
+  const totalCount = React.useMemo(
+    () => productResult?.totalCount || 0,
+    [productResult?.totalCount]
+  )
+  const totalPages = React.useMemo(
+    () => productResult?.totalPages || 0,
+    [productResult?.totalPages]
+  )
 
-  const brands = useMemo(() => {
-    const brandList = [...new Set(products.map(p => p.brand))]
-    return brandList.sort()
-  }, [products])
+  // Funciones de filtros optimizadas
+  const updateFilter = React.useCallback(
+    (key: keyof typeof filters, value: string | number | undefined) => {
+      setFilters(prev => ({ ...prev, [key]: value }))
+      setCurrentPage(1) // Reset página al cambiar filtros
+    },
+    []
+  )
+
+  const clearFilters = React.useCallback(() => {
+    setFilters({
+      category: '',
+      brand: '',
+      minPrice: undefined,
+      maxPrice: undefined,
+    })
+    setCurrentPage(1)
+  }, [])
+
+  const activeFiltersCount = React.useMemo(() => {
+    return (
+      Object.values(filters).filter(
+        value => value !== '' && value !== undefined && value !== null
+      ).length + (searchTerm ? 1 : 0)
+    )
+  }, [filters, searchTerm])
+
+  // Función para limpiar todos los filtros incluyendo búsqueda global
+  const clearAllFilters = React.useCallback(() => {
+    clearFilters()
+    setSearchTerm('')
+  }, [clearFilters, setSearchTerm])
+
+  // Listener para filtrado por categoría desde Categories
+  React.useEffect(() => {
+    const handleCategoryFilter = (event: CustomEvent<{ category: string }>) => {
+      const categoryName = event.detail.category
+      // Limpiar otros filtros y aplicar solo la categoría seleccionada
+      clearFilters()
+      setSearchTerm('')
+      // Activar filtro de categoría
+      setTimeout(() => {
+        updateFilter('category', categoryName)
+      }, 100)
+    }
+
+    window.addEventListener(
+      'filterByCategory',
+      handleCategoryFilter as EventListener
+    )
+
+    return () => {
+      window.removeEventListener(
+        'filterByCategory',
+        handleCategoryFilter as EventListener
+      )
+    }
+  }, [clearFilters, setSearchTerm, updateFilter])
+
+  // Reset de página cuando cambian los filtros o búsqueda
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [filters, searchTerm])
 
   const handleAddToCart = async (productId: string) => {
     if (!user) {
@@ -105,39 +178,48 @@ export default function ProductGrid() {
   }
 
   const handleToggleFavorite = async (productId: string) => {
-    if (!user) {
-      toast({
-        title: 'Inicia sesión',
-        description: 'Debes iniciar sesión para gestionar favoritos',
-        variant: 'destructive',
-      })
-      return
-    }
-
     const product = products.find(p => p.id === productId)
     if (!product) return
 
     try {
-      const favoriteItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images?.[0],
-        stock: product.stock,
-        category: product.category,
-        brand: product.brand,
+      // Verificar si ya está en favoritos
+      const isCurrentlyFavorite = isFavorite(productId)
+
+      if (isCurrentlyFavorite) {
+        // Encontrar el favorito para eliminarlo
+        const favoriteToRemove = favorites.find(
+          fav => fav.product_id === productId
+        )
+        if (favoriteToRemove) {
+          await removeFavorite(favoriteToRemove.id)
+          toast({
+            title: 'Eliminado de favoritos',
+            description: `${product.name} se eliminó de tus favoritos`,
+          })
+        }
+      } else {
+        // Agregar a favoritos con el formato correcto
+        const favoriteItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          main_image: product.main_image || product.images?.[0],
+          image_url: product.images?.[0], // Compatibilidad
+          stock: product.stock,
+          category: product.category,
+          brand: product.brand,
+          description: product.description,
+          is_active: product.is_active,
+        }
+
+        await addFavorite(favoriteItem)
+        toast({
+          title: 'Agregado a favoritos',
+          description: `${product.name} se agregó a tus favoritos`,
+        })
       }
-
-      const wasFavorite = isFavorite(productId)
-      toggleFavorite(favoriteItem)
-
-      toast({
-        title: wasFavorite ? 'Eliminado de favoritos' : 'Agregado a favoritos',
-        description: wasFavorite
-          ? 'El producto se eliminó de tus favoritos'
-          : 'El producto se agregó a tus favoritos',
-      })
     } catch (error) {
+      console.error('Error updating favorites:', error)
       toast({
         title: 'Error',
         description: 'No se pudo actualizar favoritos',
@@ -147,328 +229,389 @@ export default function ProductGrid() {
   }
 
   const handleViewDetails = (productId: string) => {
+    const product = products.find(p => p.id === productId)
+    if (product) {
+      // Registrar como producto visto
+      addViewedProduct({
+        id: product.id,
+        name: product.name,
+        image: product.images?.[0],
+        price: product.price,
+      })
+    }
     navigate(`/product/${productId}`)
   }
 
-  const clearFilters = () => {
-    setFilters({
-      search: '',
-      category: '',
-      brand: '',
-      minPrice: 0,
-      maxPrice: 1000000,
-    })
+  // Funciones de paginación optimizadas para server-side
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+      // Scroll al inicio de los productos
+      document.getElementById('products-grid')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }
   }
 
-  const hasActiveFilters =
-    filters.search ||
-    filters.category ||
-    filters.brand ||
-    filters.minPrice > 0 ||
-    filters.maxPrice < 1000000
+  const renderProductCard = (product: Product) => (
+    <Card
+      key={product.id}
+      className="card-dark-enhanced group cursor-pointer transition-all duration-300 hover:scale-105"
+      onMouseEnter={() => setHoveredProduct(product.id)}
+      onMouseLeave={() => setHoveredProduct(null)}
+    >
+      <CardContent className="p-0">
+        {/* Imagen del producto */}
+        <div className="relative aspect-square overflow-hidden rounded-t-lg">
+          {product.main_image ? (
+            <img
+              src={product.main_image}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-full h-full bg-gris-medio/20 flex items-center justify-center">
+              <Package className="h-16 w-16 text-gris-medio" />
+            </div>
+          )}
+
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {product.is_featured && (
+              <Badge className="bg-verde-neon text-gris-oscuro font-semibold">
+                Destacado
+              </Badge>
+            )}
+            {product.compare_price && product.compare_price > product.price && (
+              <Badge className="bg-red-500 text-white">
+                -
+                {Math.round(
+                  ((product.compare_price - product.price) /
+                    product.compare_price) *
+                    100
+                )}
+                %
+              </Badge>
+            )}
+            {product.stock <= 0 && <Badge variant="destructive">Agotado</Badge>}
+          </div>
+        </div>
+
+        {/* Información del producto */}
+        <div className="p-4 space-y-3">
+          {/* Categoría y marca */}
+          <div className="flex items-center justify-between text-sm">
+            <Badge
+              variant="outline"
+              className="text-verde-neon border-verde-neon/30"
+            >
+              {product.category}
+            </Badge>
+            {product.brand && (
+              <span className="text-gris-medio">{product.brand}</span>
+            )}
+          </div>
+
+          {/* Nombre del producto */}
+          <h3 className="text-white font-semibold line-clamp-2 hover:text-verde-neon transition-colors">
+            {product.name}
+          </h3>
+
+          {/* Precio */}
+          <div className="flex items-center gap-2">
+            <span className="price-primary text-lg">
+              ${product.price.toLocaleString('es-CO')}
+            </span>
+            {product.compare_price && product.compare_price > product.price && (
+              <span className="text-gris-medio line-through text-sm">
+                ${product.compare_price.toLocaleString('es-CO')}
+              </span>
+            )}
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex gap-2">
+            {/* Botón agregar al carrito */}
+            <Button
+              onClick={e => {
+                e.stopPropagation()
+                handleAddToCart(product.id)
+              }}
+              disabled={product.stock <= 0}
+              className="button-primary-glow flex-1"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              {product.stock <= 0 ? 'Agotado' : 'Agregar'}
+            </Button>
+
+            {/* Botón favoritos */}
+            <Button
+              onClick={e => {
+                e.stopPropagation()
+                handleToggleFavorite(product.id)
+              }}
+              variant="outline"
+              size="icon"
+              className="bg-gris-medio/20 border-gris-medio/30 text-white hover:bg-gris-medio/40 hover:border-verde-neon/50"
+            >
+              <Heart
+                className={`h-4 w-4 ${
+                  isFavorite(product.id) ? 'fill-red-500 text-red-500' : ''
+                }`}
+              />
+            </Button>
+
+            {/* Botón ver detalles */}
+            <Button
+              onClick={e => {
+                e.stopPropagation()
+                handleViewDetails(product.id)
+              }}
+              variant="outline"
+              size="icon"
+              className="bg-gris-medio/20 border-gris-medio/30 text-white hover:bg-gris-medio/40 hover:border-verde-neon/50"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Cargando productos...</span>
-      </div>
+      <section id="shop" className="pt-20 pb-16 bg-gris-oscuro">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-verde-neon" />
+          </div>
+        </div>
+      </section>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500 mb-4">Error al cargar productos</p>
-        <Button onClick={() => refetch()}>Reintentar</Button>
-      </div>
+      <section id="shop" className="pt-20 pb-16 bg-gris-oscuro">
+        <div className="container mx-auto">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Error al cargar productos
+            </h2>
+            <Button onClick={() => refetch()} className="button-primary-glow">
+              Reintentar
+            </Button>
+          </div>
+        </div>
+      </section>
     )
   }
 
   return (
-    <div id="shop" className="container mx-auto px-4 py-8">
-      {/* Header con búsqueda y filtros */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar productos..."
-                value={filters.search}
-                onChange={e =>
-                  setFilters(prev => ({ ...prev, search: e.target.value }))
-                }
-                className="pl-10"
-              />
+    <section
+      id="shop"
+      className="pt-20 pb-16 bg-gris-oscuro border-t-2 border-verde-neon/20"
+    >
+      <div className="container mx-auto">
+        {/* Header con título y búsqueda */}
+        <div className="bg-gris-medio/10 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-gris-medio/20">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-white to-verde-neon bg-clip-text text-transparent">
+                Productos de Ciclismo
+              </h2>
+              <p className="text-white-900 text-lg">
+                Encuentra todo lo que necesitas para tu bicicleta
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <SimpleSearchBar onSearch={term => setSearchTerm(term)} />
+
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="border-gris-medio/30 bg-gris-medio/20 text-white hover:bg-gris-medio/30 hover:border-verde-neon/50"
+              >
+                <FilterIcon className="h-4 w-4 mr-2" />
+                Filtros
+                {activeFiltersCount > 0 && (
+                  <Badge className="ml-2 bg-verde-neon/20 text-verde-neon border-verde-neon/30 text-xs">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
             </div>
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Filtros
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1">
-                  {
-                    [filters.search, filters.category, filters.brand].filter(
-                      Boolean
-                    ).length
-                  }
-                </Badge>
+        {/* Productos vistos recientemente */}
+        <RecentlyViewed />
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar de filtros - Simplificado temporalmente */}
+          {showFilters && (
+            <div className="lg:w-80 bg-gris-medio/20 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Filtros</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFilters(false)}
+                  className="text-gris-claro hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-white">Categoría</Label>
+                  <Input
+                    value={filters.category}
+                    onChange={e => updateFilter('category', e.target.value)}
+                    placeholder="Filtrar por categoría"
+                    className="bg-gris-oscuro/50 border-gris-medio text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-white">Marca</Label>
+                  <Input
+                    value={filters.brand}
+                    onChange={e => updateFilter('brand', e.target.value)}
+                    placeholder="Filtrar por marca"
+                    className="bg-gris-oscuro/50 border-gris-medio text-white"
+                  />
+                </div>
+
+                <Button
+                  onClick={clearAllFilters}
+                  variant="outline"
+                  className="w-full border-gris-medio text-gris-claro hover:text-white"
+                >
+                  Limpiar filtros
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Grid de productos */}
+          <div className="flex-1">
+            {/* Contador de productos */}
+            <div className="mb-6 flex items-center justify-between">
+              <div className="text-white-900">
+                Mostrando{' '}
+                {products.length > 0
+                  ? `${(currentPage - 1) * productsPerPage + 1}-${Math.min(
+                      currentPage * productsPerPage,
+                      totalCount
+                    )}`
+                  : '0'}{' '}
+                de {totalCount} productos
+                {searchTerm && (
+                  <span className="text-verde-neon ml-2">
+                    para "{searchTerm}"
+                  </span>
+                )}
+                {totalPages > 1 && (
+                  <span className="text-gris-medio/70 ml-2">
+                    (Página {currentPage} de {totalPages})
+                  </span>
+                )}
+              </div>
+
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-gris-medio hover:text-white"
+                >
+                  Limpiar filtros
+                </Button>
               )}
-            </Button>
+            </div>
 
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="flex items-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                Limpiar
-              </Button>
+            {products.length === 0 && !isLoading ? (
+              <div className="text-center py-12">
+                <Package className="h-16 w-16 mx-auto mb-4 text-gris-medio/50" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No se encontraron productos
+                </h3>
+                <p className="text-gris-medio mb-6">
+                  {searchTerm
+                    ? `No hay productos que coincidan con "${searchTerm}"`
+                    : 'Intenta ajustar los filtros de búsqueda'}
+                </p>
+                {activeFiltersCount > 0 && (
+                  <Button
+                    onClick={clearAllFilters}
+                    className="button-primary-glow"
+                  >
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Grid de productos con paginación */}
+                <div
+                  id="products-grid"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                >
+                  {products.map(renderProductCard)}
+                </div>
+
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex items-center justify-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="text-white border-gris-medio hover:bg-verde-neon hover:text-gris-oscuro"
+                    >
+                      Anterior
+                    </Button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      page => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={
+                            currentPage === page
+                              ? 'bg-verde-neon text-gris-oscuro'
+                              : 'text-white border-gris-medio hover:bg-verde-neon hover:text-gris-oscuro'
+                          }
+                        >
+                          {page}
+                        </Button>
+                      )
+                    )}
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="text-white border-gris-medio hover:bg-verde-neon hover:text-gris-oscuro"
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
-
-        {/* Panel de filtros */}
-        {showFilters && (
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Categoría
-                </label>
-                <Select
-                  value={filters.category}
-                  onValueChange={value =>
-                    setFilters(prev => ({ ...prev, category: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas las categorías" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todas las categorías</SelectItem>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Marca</label>
-                <Select
-                  value={filters.brand}
-                  onValueChange={value =>
-                    setFilters(prev => ({ ...prev, brand: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas las marcas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todas las marcas</SelectItem>
-                    {brands.map(brand => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Precio mínimo
-                </label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minPrice || ''}
-                  onChange={e =>
-                    setFilters(prev => ({
-                      ...prev,
-                      minPrice: Number(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Precio máximo
-                </label>
-                <Input
-                  type="number"
-                  placeholder="1000000"
-                  value={filters.maxPrice === 1000000 ? '' : filters.maxPrice}
-                  onChange={e =>
-                    setFilters(prev => ({
-                      ...prev,
-                      maxPrice: Number(e.target.value) || 1000000,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-          </Card>
-        )}
       </div>
-
-      {/* Contador de productos */}
-      <div className="mb-6">
-        <p className="text-body-dark">
-          {products.length} producto{products.length !== 1 ? 's' : ''}{' '}
-          encontrado{products.length !== 1 ? 's' : ''}
-        </p>
-      </div>
-
-      {/* Grid de productos */}
-      {products.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-dark mb-4">No se encontraron productos</p>
-          {hasActiveFilters && (
-            <Button
-              onClick={clearFilters}
-              variant="outline"
-              className="button-primary-glow"
-            >
-              Limpiar filtros
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-          {products.map(product => (
-            <Card
-              key={product.id}
-              className="card-dark-enhanced group cursor-pointer hover:shadow-large transition-all duration-300 overflow-hidden"
-              onMouseEnter={() => setHoveredProduct(product.id)}
-              onMouseLeave={() => setHoveredProduct(null)}
-            >
-              <div
-                className="relative overflow-hidden bg-gray-800/50 flex items-center justify-center"
-                style={{ minHeight: '200px', maxHeight: '280px' }}
-              >
-                <img
-                  src={product.images?.[0] || '/placeholder.svg'}
-                  alt={product.name}
-                  className="object-contain w-full h-full max-w-full max-h-full p-2 group-hover:scale-105 transition-transform duration-300"
-                  style={{
-                    width: 'auto',
-                    height: 'auto',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                  }}
-                  onError={e => {
-                    e.currentTarget.src = '/placeholder.svg'
-                  }}
-                />
-
-                {/* Badges */}
-                <div className="absolute top-2 left-2 flex flex-col gap-1">
-                  {product.is_featured && (
-                    <Badge
-                      variant="default"
-                      className="bg-brand-secondary text-black font-semibold shadow-lg"
-                    >
-                      Destacado
-                    </Badge>
-                  )}
-                  {product.stock === 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="bg-red-600 text-white"
-                    >
-                      Agotado
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Botones de acción */}
-                <div
-                  className={`absolute top-2 right-2 flex flex-col gap-2 transition-opacity duration-300 ${
-                    hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 bg-gris-medio/20 hover:bg-verde-neon/20 backdrop-blur-sm border border-gris-medio/30"
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleToggleFavorite(product.id)
-                    }}
-                  >
-                    <Heart
-                      className={`h-4 w-4 ${
-                        isFavorite(product.id)
-                          ? 'fill-red-500 text-red-500'
-                          : 'text-white hover:text-verde-neon'
-                      }`}
-                    />
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 bg-gris-medio/20 hover:bg-verde-neon/20 backdrop-blur-sm border border-gris-medio/30"
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleViewDetails(product.id)
-                    }}
-                  >
-                    <Eye className="h-4 w-4 text-white hover:text-verde-neon" />
-                  </Button>
-                </div>
-              </div>
-
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  {/* Marca */}
-                  <p className="text-sm text-gris-medio uppercase tracking-wide">
-                    {product.brand}
-                  </p>
-
-                  {/* Nombre del producto */}
-                  <h3 className="text-heading-dark text-lg leading-tight line-clamp-2">
-                    {product.name}
-                  </h3>
-
-                  {/* Precio */}
-                  <div className="flex items-center gap-2">
-                    <span className="price-primary text-lg">
-                      ${product.price.toLocaleString('es-CO')}
-                    </span>
-                  </div>
-
-                  {/* Botón agregar al carrito */}
-                  <Button
-                    className="button-primary-glow w-full mt-4"
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleAddToCart(product.id)
-                    }}
-                    disabled={product.stock === 0}
-                  >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    {product.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+    </section>
   )
 }

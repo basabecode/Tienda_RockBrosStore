@@ -1,0 +1,206 @@
+{
+  "timestamp": "2025-10-29T18:48:41.285Z",
+  "duration": 0.091,
+  "results": {
+    "errorHandling": [
+      {
+        "file": "DashboardOverview.tsx",
+        "hasErrorStates": true,
+        "hasLoadingStates": true,
+        "hasRetryLogic": true,
+        "hasErrorBoundaries": false,
+        "hasTryCatch": true,
+        "hasToastNotifications": false,
+        "score": 4
+      },
+      {
+        "file": "Orders.tsx",
+        "hasErrorStates": true,
+        "hasLoadingStates": true,
+        "hasRetryLogic": true,
+        "hasErrorBoundaries": false,
+        "hasTryCatch": true,
+        "hasToastNotifications": false,
+        "score": 4
+      },
+      {
+        "file": "Favorites.tsx",
+        "hasErrorStates": true,
+        "hasLoadingStates": true,
+        "hasRetryLogic": true,
+        "hasErrorBoundaries": false,
+        "hasTryCatch": true,
+        "hasToastNotifications": false,
+        "score": 4
+      },
+      {
+        "file": "ChangePassword.tsx",
+        "hasErrorStates": true,
+        "hasLoadingStates": true,
+        "hasRetryLogic": false,
+        "hasErrorBoundaries": false,
+        "hasTryCatch": true,
+        "hasToastNotifications": false,
+        "score": 3
+      },
+      {
+        "file": "AdminEcommerceDashboard.tsx",
+        "hasErrorStates": true,
+        "hasLoadingStates": true,
+        "hasRetryLogic": true,
+        "hasErrorBoundaries": false,
+        "hasTryCatch": true,
+        "hasToastNotifications": false,
+        "score": 4
+      }
+    ],
+    "routes": [
+      {
+        "component": "App.tsx - Configuración de Rutas",
+        "hasReactRouter": true,
+        "hasRoutes": true,
+        "hasUserRoutes": true,
+        "hasAdminRoutes": true,
+        "hasProtectedRoutes": true,
+        "hasPublicRoutes": true,
+        "score": 6
+      },
+      {
+        "component": "pages/Login.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": true,
+        "hasNavigation": true,
+        "hasAccessibility": true,
+        "score": 5
+      },
+      {
+        "component": "pages/DashboardOverview.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": true,
+        "hasNavigation": true,
+        "hasAccessibility": true,
+        "score": 5
+      },
+      {
+        "component": "pages/Orders.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": true,
+        "hasNavigation": true,
+        "hasAccessibility": true,
+        "score": 5
+      },
+      {
+        "component": "pages/AdminEcommerceDashboard.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": true,
+        "hasNavigation": true,
+        "hasAccessibility": true,
+        "score": 5
+      },
+      {
+        "component": "ProtectedRoute.tsx",
+        "hasAuthCheck": true,
+        "hasRedirect": true,
+        "hasLoading": true,
+        "hasErrorHandling": true,
+        "score": 4
+      },
+      {
+        "component": "pages/Favorites.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": false,
+        "hasNavigation": true,
+        "hasAccessibility": true,
+        "score": 4
+      },
+      {
+        "component": "components/DashboardLayout.tsx",
+        "hasNavigation": true,
+        "hasResponsive": true,
+        "hasErrorBoundary": false,
+        "hasAccessibility": true,
+        "score": 3
+      },
+      {
+        "component": "components/AdminPageLayout.tsx",
+        "hasNavigation": true,
+        "hasResponsive": true,
+        "hasErrorBoundary": false,
+        "hasAccessibility": true,
+        "score": 3
+      },
+      {
+        "component": "components/Header.tsx",
+        "hasNavigation": true,
+        "hasResponsive": true,
+        "hasErrorBoundary": false,
+        "hasAccessibility": true,
+        "score": 3
+      },
+      {
+        "component": "components/Footer.tsx",
+        "hasNavigation": true,
+        "hasResponsive": true,
+        "hasErrorBoundary": false,
+        "hasAccessibility": true,
+        "score": 3
+      },
+      {
+        "component": "pages/ChangePassword.tsx",
+        "hasProperImports": true,
+        "hasErrorHandling": true,
+        "hasLoadingStates": false,
+        "hasNavigation": false,
+        "hasAccessibility": true,
+        "score": 3
+      },
+      {
+        "component": "components/Header.tsx",
+        "hasReactRouterLinks": false,
+        "hasActiveStates": true,
+        "hasLogout": false,
+        "hasConditionalNav": true,
+        "hasResponsive": true,
+        "score": 3
+      },
+      {
+        "component": "components/AdminSidebar.tsx",
+        "hasReactRouterLinks": false,
+        "hasActiveStates": true,
+        "hasLogout": true,
+        "hasConditionalNav": false,
+        "hasResponsive": true,
+        "score": 3
+      },
+      {
+        "component": "components/AdminUserMenu.tsx",
+        "hasReactRouterLinks": false,
+        "hasActiveStates": false,
+        "hasLogout": true,
+        "hasConditionalNav": false,
+        "hasResponsive": false,
+        "score": 1
+      },
+      {
+        "component": "components/ClientUserMenu.tsx",
+        "hasReactRouterLinks": false,
+        "hasActiveStates": false,
+        "hasLogout": true,
+        "hasConditionalNav": false,
+        "hasResponsive": false,
+        "score": 1
+      }
+    ]
+  },
+  "summary": {
+    "overallScore": 72,
+    "totalTests": 21,
+    "passedTests": 7,
+    "failedTests": 2
+  }
+}

@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Package, Wrench, ArrowRight } from 'lucide-react'
+
+import { useSearch } from '@/hooks/use-search-context'
 
 interface Category {
   id: string
@@ -16,38 +17,62 @@ const categories: Category[] = [
   {
     id: 'seguridad',
     name: 'Seguridad',
-    image: '/img/categories/seguridad-placeholder.svg',
+    image: '/img/categories/casco.jpg',
     count: 120,
     description: 'Cascos y equipamiento de protección',
-    color: 'bg-brand-primary', // Verde bosque - Principal
+    color: 'from-emerald-600/80 to-emerald-500/60', // Verde bosque degradado
   },
   {
     id: 'bolsos',
     name: 'Bolsos',
-    image: '/img/categories/bolsos-placeholder.svg',
+    image: '/img/categories/bolsos.jpg',
     count: 76,
     description: 'Mochilas y bolsos para ciclismo',
-    color: 'bg-brand-secondary', // Verde neón - Secundario
+    color: 'from-teal-500/80 to-cyan-400/60', // Verde neón degradado
   },
   {
     id: 'accesorios',
     name: 'Accesorios',
-    image: '/img/categories/accesorios-placeholder.svg',
+    image: '/img/categories/gafas3.jpg',
     count: 87,
     description: 'Soportes, bombas, candados y más',
-    color: 'bg-brand-neutral', // Gris medio - Neutro
+    color: 'from-slate-600/80 to-slate-500/60', // Gris neutro degradado
   },
   {
     id: 'herramientas',
     name: 'Herramientas',
-    image: '/img/categories/herramientas-placeholder.svg',
+    image: '/img/categories/pedales.jpg',
     count: 53,
     description: 'Mantenimiento y ajuste profesional',
-    color: 'bg-brand-dark', // Gris oscuro - Profesional
+    color: 'from-zinc-700/80 to-zinc-600/60', // Gris oscuro degradado
   },
 ]
 
 const Categories = () => {
+  const { setSearchTerm } = useSearch()
+
+  // Función para navegar a una categoría específica
+  const handleCategoryClick = (categoryName: string) => {
+    // Limpiar búsqueda anterior
+    setSearchTerm('')
+
+    // Navegar a la sección de productos
+    const shopElement = document.getElementById('shop')
+    if (shopElement) {
+      shopElement.scrollIntoView({ behavior: 'smooth' })
+
+      // Después del scroll, activar el filtro de categoría
+      setTimeout(() => {
+        // Dispatch evento personalizado para activar filtro
+        const filterEvent = new CustomEvent('filterByCategory', {
+          detail: { category: categoryName },
+        })
+        window.dispatchEvent(filterEvent)
+      }, 800) // Esperar que termine la animación de scroll
+    }
+  }
+
+  // El return debe estar dentro de la función Categories
   return (
     <section
       id="categories"
@@ -56,82 +81,91 @@ const Categories = () => {
     >
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-fade-in">
           <Badge
             variant="secondary"
-            className="mb-4 text-sm font-medium bg-verde-neon/10 text-verde-neon border-verde-neon/30"
+            className="mb-6 text-sm font-medium bg-gradient-to-r from-brand-secondary/20 to-brand-primary/20 text-gray-800 border-brand-secondary/30 px-4 py-2 rounded-full"
           >
             Explorar por categoría
           </Badge>
           <h2
             id="categories-title"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white leading-tight"
           >
             Encuentra lo que necesitas para
-            <span className="block text-verde-neon">tu bicicleta</span>
+            <span className="block bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent mt-2">
+              tu bicicleta
+            </span>
           </h2>
-          <p className="text-lg text-gris-medio max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Navega nuestra selección de componentes, ropa y accesorios pensados
-            para ciclistas.
+            para ciclistas de todos los niveles.
           </p>
         </div>
-
-        {/* Categories Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          {categories.map(category => {
+      </div>
+      {/* Categories Grid */}
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {categories.map((category, index) => {
             return (
               <Card
                 key={category.id}
-                className="group cursor-pointer card-dark-enhanced border-gris-medio/20 hover:border-verde-neon/30 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 overflow-hidden relative h-48"
+                className="group cursor-pointer relative overflow-hidden rounded-2xl border-0 shadow-lg category-card-hover bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm h-72 sm:h-80 category-card-enter"
                 role="button"
                 tabIndex={0}
-                aria-label={`Browse ${category.name} category with ${category.count} productos`}
+                aria-label={`Explorar categoría ${category.name} con ${category.count} productos`}
+                onClick={() => handleCategoryClick(category.name)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    // Handle category navigation
-                    console.log(`Navigate to ${category.name} category`)
+                    e.preventDefault()
+                    handleCategoryClick(category.name)
                   }
                 }}
+                style={{ animationDelay: `${index * 150}ms` }}
               >
                 <CardContent className="p-0 relative h-full">
-                  {/* Category Image - Ocupa todo el espacio */}
-                  <div className="absolute inset-0 w-full h-full overflow-hidden">
+                  {/* Background Image with Improved Positioning */}
+                  <div className="absolute inset-0 overflow-hidden">
                     <img
                       src={category.image}
-                      alt={`${category.name} category`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt={`Categoría ${category.name}`}
+                      className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
                       loading="lazy"
                     />
-                    {/* Overlay gradiente */}
+
+                    {/* Multi-layer Overlay for Better Readability */}
                     <div
-                      className={`absolute inset-0 ${category.color} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}
+                      className={`absolute inset-0 bg-gradient-to-br ${category.color} mix-blend-overlay transition-opacity duration-500 group-hover:opacity-80`}
                     ></div>
 
-                    {/* Overlay para mejorar legibilidad del texto */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+                    {/* Subtle Border Glow on Hover */}
+                    <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-brand-secondary/40 transition-all duration-500"></div>
                   </div>
 
-                  {/* Contenido superpuesto en la parte inferior */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                    {/* Contenedor con fondo semitransparente */}
-                    <div className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/20 group-hover:bg-white/20 transition-all duration-300">
-                      {/* Category Name */}
-                      <h3 className="text-lg font-semibold mb-2 text-white group-hover:text-verde-neon transition-colors leading-tight">
+                  {/* Content Container with Better Spacing */}
+                  <div className="relative h-full flex flex-col justify-end p-6">
+                    <div className="transform transition-all duration-500 group-hover:translate-y-[-8px]">
+                      {/* Category Name with Enhanced Typography */}
+                      <h3 className="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-brand-secondary transition-colors duration-300 leading-tight">
                         {category.name}
                       </h3>
 
-                      {/* Description */}
-                      <p className="text-sm text-white/90 mb-2 leading-tight">
+                      {/* Description with Better Spacing */}
+                      <p className="text-sm sm:text-base text-gray-200 mb-4 leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300">
                         {category.description}
                       </p>
 
-                      {/* Product Count */}
-                      <Badge
-                        variant="outline"
-                        className="text-xs bg-verde-neon/20 text-verde-neon border-verde-neon/30 hover:bg-verde-neon/30 hover:border-verde-neon/50 transition-all duration-300"
-                      >
-                        {category.count} productos
-                      </Badge>
+                      {/* Enhanced Product Count Badge */}
+                      <div className="flex items-center justify-between">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-medium bg-black/30 text-brand-secondary border-brand-secondary/40 hover:bg-brand-secondary/20 hover:border-brand-secondary/60 transition-all duration-300 px-3 py-1 badge-enhanced"
+                        >
+                          {category.count} productos
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -139,83 +173,75 @@ const Categories = () => {
             )
           })}
         </div>
+      </div>
 
-        {/* Featured Category Banner */}
-        <Card className="card-dark-enhanced text-white border-verde-neon/20 shadow-xl overflow-hidden relative">
-          <CardContent className="p-8 md:p-12 relative z-10">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <Badge className="mb-4 bg-verde-neon/20 text-verde-neon border-verde-neon/30 font-medium">
-                  Oferta especial
-                </Badge>
-                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white">
-                  Kit esencial para ciclistas
+      {/* Featured Category Banner */}
+      <div className="container mx-auto px-4">
+        <Card className="relative overflow-hidden rounded-3xl border-0 shadow-2xl bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm min-h-[400px]">
+          {/* Grid Layout: Exacto 50% - 50% */}
+          <div className="grid grid-cols-1 md:grid-cols-2 h-full min-h-[400px]">
+            {/* Mitad Izquierda - Contenido */}
+            <div className="flex flex-col justify-center p-8 md:p-12 space-y-6 relative z-10">
+              <Badge className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-brand-secondary/20 to-brand-primary/20 text-gray-800 border-brand-secondary/30 font-medium text-sm w-fit">
+                Oferta especial
+              </Badge>
+
+              <div className="space-y-4">
+                <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  Kit esencial para
+                  <span className="block bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent">
+                    ciclistas
+                  </span>
                 </h3>
-                <p className="text-lg mb-6 opacity-90 text-white/90">
+
+                <p className="text-lg text-gray-300 leading-relaxed pr-4">
                   Equipamiento de seguridad, bolsos funcionales, herramientas y
                   accesorios esenciales para cada aventura. Promoción especial
                   este mes.
                 </p>
-                <Button size="lg" className="button-primary-glow">
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  className="button-primary-glow group px-8 py-3 text-gray-900 font-semibold"
+                >
                   Comprar Ahora
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-300"
+                >
+                  Ver detalles
                 </Button>
               </div>
-
-              <div className="relative group/kit">
-                {/* Imagen de fondo que ocupa todo el grid */}
-                <div className="relative rounded-2xl overflow-hidden min-h-[280px] bg-gradient-to-br from-white/20 to-white/5">
-                  {/* Imagen placeholder de fondo */}
-                  <img
-                    src="/img/categories/kit-inicio-fullbg.svg"
-                    alt="Kit de inicio para ciclistas"
-                    className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover/kit:opacity-60 group-hover/kit:scale-105 transition-all duration-700 ease-out"
-                    loading="lazy"
-                  />
-
-                  {/* Overlay gradiente dinámico */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover/kit:from-black/40 transition-all duration-500"></div>
-
-                  {/* Contenido superpuesto */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-6">
-                    {/* Contenedor de texto con fondo semitransparente */}
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 transform group-hover/kit:bg-white/20 group-hover/kit:scale-105 transition-all duration-500 ease-out">
-                      {/* Título del kit */}
-                      <h4 className="text-xl font-bold mb-2 text-white group-hover/kit:text-verde-neon transition-colors duration-300">
-                        Kit de inicio para ciclistas
-                      </h4>
-
-                      {/* Precio especial */}
-                      <div className="text-white">
-                        <p className="text-sm font-medium opacity-90 mb-1 group-hover/kit:opacity-100 transition-opacity duration-300">
-                          Precio especial
-                        </p>
-                        <div className="price-primary text-2xl md:text-3xl font-extrabold group-hover/kit:scale-110 transition-all duration-300 origin-left">
-                          $99.999
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Efecto de brillo al hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover/kit:opacity-100 transition-opacity duration-700 pointer-events-none">
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent transform -translate-x-full group-hover/kit:translate-x-full transition-transform duration-1000 ease-out"></div>
-                  </div>
-
-                  {/* Partículas decorativas animadas */}
-                  <div className="absolute top-4 right-4 w-2 h-2 bg-verde-neon/40 rounded-full group-hover/kit:scale-150 group-hover/kit:bg-verde-neon/80 transition-all duration-500"></div>
-                  <div className="absolute top-1/2 left-4 w-1.5 h-1.5 bg-verde-neon/30 rounded-full group-hover/kit:scale-125 group-hover/kit:bg-verde-neon/70 transition-all duration-700 delay-100"></div>
-                  <div className="absolute bottom-1/4 right-8 w-1 h-1 bg-verde-neon/50 rounded-full group-hover/kit:scale-200 group-hover/kit:bg-verde-neon/90 transition-all duration-600 delay-200"></div>
-                </div>
-              </div>
             </div>
-          </CardContent>
 
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-verde-neon rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-verde-neon rounded-full translate-y-12 -translate-x-12"></div>
+            {/* Mitad Derecha - Imagen Completa */}
+            <div className="relative group/kit overflow-hidden rounded-r-3xl">
+              <img
+                src="/hero_ppal/kit_esencial.jpeg"
+                alt="Kit de inicio para ciclistas"
+                className="w-full h-full object-cover transition-all duration-700 ease-out group-hover/kit:scale-105"
+                loading="lazy"
+              />
+
+              {/* Overlay sutil para mejor integración */}
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-gray-900/20"></div>
+
+              {/* Glow Effect on Hover */}
+              <div className="absolute inset-0 bg-gradient-to-l from-brand-primary/10 via-transparent to-transparent opacity-0 group-hover/kit:opacity-100 transition-all duration-500"></div>
+
+              {/* Sutil border interno */}
+              <div className="absolute inset-0 ring-1 ring-inset ring-brand-secondary/20 rounded-r-3xl"></div>
+            </div>
           </div>
+
+          {/* Background Decorations mejoradas */}
+          <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-brand-secondary/10 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-brand-primary/10 to-transparent rounded-full blur-2xl"></div>
         </Card>
       </div>
     </section>

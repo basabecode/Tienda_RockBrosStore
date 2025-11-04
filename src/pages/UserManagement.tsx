@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { AdminPageLayout } from '@/components/AdminPageLayout'
+import { TempAdminPage } from '@/components/TempAdminPage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
+import { formatDate } from '@/utils/formatters'
 import {
   Users,
   Search,
@@ -203,19 +204,13 @@ const UserManagement = () => {
       case 'admin':
         return 'bg-red-100 text-red-800'
       case 'moderator':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-brand-primary/10 text-brand-primary'
       default:
         return 'bg-gray-100 text-gray-800'
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
+  // Función formatDate movida a utils/formatters.ts
 
   const handleRoleChange = (user: UserProfile) => {
     setSelectedUser(user)
@@ -231,13 +226,13 @@ const UserManagement = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
       </div>
     )
   }
 
   return (
-    <AdminPageLayout
+    <TempAdminPage
       title="Gestión de Usuarios"
       description="Administra usuarios registrados, valida cuentas y gestiona roles del sistema"
       icon={Users}
@@ -255,73 +250,73 @@ const UserManagement = () => {
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-300">
                     Total Usuarios
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-100">
                     {users?.length || 0}
                   </p>
                 </div>
-                <Users className="w-8 h-8 text-blue-600" />
+                <Users className="w-8 h-8 text-brand-primary" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-300">
                     Administradores
                   </p>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-2xl font-bold text-red-400">
                     {users?.filter(u => u.role === 'admin').length || 0}
                   </p>
                 </div>
-                <Crown className="w-8 h-8 text-red-600" />
+                <Crown className="w-8 h-8 text-red-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-300">
                     Moderadores
                   </p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-brand-primary">
                     {users?.filter(u => u.role === 'moderator').length || 0}
                   </p>
                 </div>
-                <Shield className="w-8 h-8 text-blue-600" />
+                <Shield className="w-8 h-8 text-brand-primary" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-300">
                     Usuarios Activos
                   </p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-400">
                     {users?.filter(u => u.is_active).length || 0}
                   </p>
                 </div>
-                <UserCheck className="w-8 h-8 text-green-600" />
+                <UserCheck className="w-8 h-8 text-green-400" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -331,20 +326,40 @@ const UserManagement = () => {
                     placeholder="Buscar por nombre o email..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400"
                   />
                 </div>
               </div>
 
               <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className="w-full sm:w-48 bg-gray-700 border-gray-600 text-gray-100">
                   <SelectValue placeholder="Todos los roles" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los roles</SelectItem>
-                  <SelectItem value="admin">Administradores</SelectItem>
-                  <SelectItem value="moderator">Moderadores</SelectItem>
-                  <SelectItem value="user">Usuarios</SelectItem>
+                <SelectContent className="bg-gray-700 border-gray-600">
+                  <SelectItem
+                    value="all"
+                    className="text-gray-100 hover:bg-gray-600"
+                  >
+                    Todos los roles
+                  </SelectItem>
+                  <SelectItem
+                    value="admin"
+                    className="text-gray-100 hover:bg-gray-600"
+                  >
+                    Administradores
+                  </SelectItem>
+                  <SelectItem
+                    value="moderator"
+                    className="text-gray-100 hover:bg-gray-600"
+                  >
+                    Moderadores
+                  </SelectItem>
+                  <SelectItem
+                    value="user"
+                    className="text-gray-100 hover:bg-gray-600"
+                  >
+                    Usuarios
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -352,50 +367,53 @@ const UserManagement = () => {
         </Card>
 
         {/* Users Table */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle>Lista de Usuarios</CardTitle>
+            <CardTitle className="text-gray-100">Lista de Usuarios</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                  <tr className="border-b border-gray-600">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Usuario
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Rol
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Estado
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Registro
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Último acceso
                     </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-300">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {users?.map(user => (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                    <tr
+                      key={user.id}
+                      className="border-b border-gray-600 hover:bg-gray-700"
+                    >
                       <td className="py-3 px-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full flex items-center justify-center">
                             <span className="text-white font-semibold text-sm">
                               {user.full_name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-100">
                               {user.full_name}
                             </p>
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
+                            <p className="text-sm text-gray-300 flex items-center gap-1">
                               <Mail className="w-3 h-3" />
                               {user.email}
                             </p>
@@ -421,13 +439,13 @@ const UserManagement = () => {
                           {user.is_active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-4 text-sm text-gray-300">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDate(user.created_at)}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-4 text-sm text-gray-300">
                         {user.last_sign_in_at
                           ? formatDate(user.last_sign_in_at)
                           : 'Nunca'}
@@ -438,6 +456,7 @@ const UserManagement = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleRoleChange(user)}
+                            className="border-gray-600 text-gray-300 hover:bg-gray-700"
                           >
                             Cambiar Rol
                           </Button>
@@ -452,8 +471,8 @@ const UserManagement = () => {
                             }
                             className={
                               user.is_active
-                                ? 'text-red-600 hover:text-red-700'
-                                : ''
+                                ? 'text-red-400 hover:text-red-300 border-gray-600 hover:bg-gray-700'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
                             }
                           >
                             {user.is_active ? (
@@ -479,10 +498,10 @@ const UserManagement = () => {
             {users?.length === 0 && (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-100 mb-2">
                   No se encontraron usuarios
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-300">
                   {searchTerm || selectedRole !== 'all'
                     ? 'Intenta ajustar los filtros de búsqueda'
                     : 'No hay usuarios registrados en el sistema'}
@@ -494,25 +513,27 @@ const UserManagement = () => {
 
         {/* Role Change Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
+          <DialogContent className="bg-gray-800 border-gray-700">
             <DialogHeader>
-              <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
+              <DialogTitle className="text-gray-100">
+                Cambiar Rol de Usuario
+              </DialogTitle>
             </DialogHeader>
 
             {selectedUser && (
               <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900">
+                <div className="p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                  <h4 className="font-medium text-gray-100">
                     {selectedUser.full_name}
                   </h4>
-                  <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-300">{selectedUser.email}</p>
+                  <p className="text-sm text-gray-300">
                     Rol actual: <strong>{selectedUser.role}</strong>
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="font-medium text-gray-900">
+                  <h4 className="font-medium text-gray-100">
                     Seleccionar nuevo rol:
                   </h4>
 
@@ -523,7 +544,11 @@ const UserManagement = () => {
                       }
                       onClick={() => confirmRoleChange('user')}
                       disabled={selectedUser.role === 'user'}
-                      className="justify-start"
+                      className={`justify-start ${
+                        selectedUser.role === 'user'
+                          ? 'bg-brand-primary text-white'
+                          : 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                      }`}
                     >
                       <User className="w-4 h-4 mr-2" />
                       Usuario - Acceso básico
@@ -537,7 +562,11 @@ const UserManagement = () => {
                       }
                       onClick={() => confirmRoleChange('moderator')}
                       disabled={selectedUser.role === 'moderator'}
-                      className="justify-start"
+                      className={`justify-start ${
+                        selectedUser.role === 'moderator'
+                          ? 'bg-brand-primary text-white'
+                          : 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                      }`}
                     >
                       <Shield className="w-4 h-4 mr-2" />
                       Moderador - Gestión de contenido
@@ -549,7 +578,11 @@ const UserManagement = () => {
                       }
                       onClick={() => confirmRoleChange('admin')}
                       disabled={selectedUser.role === 'admin'}
-                      className="justify-start"
+                      className={`justify-start ${
+                        selectedUser.role === 'admin'
+                          ? 'bg-brand-primary text-white'
+                          : 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                      }`}
                     >
                       <Crown className="w-4 h-4 mr-2" />
                       Administrador - Control total
@@ -561,6 +594,7 @@ const UserManagement = () => {
                   <Button
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
                   >
                     Cancelar
                   </Button>
@@ -570,7 +604,7 @@ const UserManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminPageLayout>
+    </TempAdminPage>
   )
 }
 

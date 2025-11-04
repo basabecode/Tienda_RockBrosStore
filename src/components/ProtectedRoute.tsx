@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 interface ProtectedRouteProps {
@@ -11,22 +11,41 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAdmin = false,
 }) => {
   const { user, isAdmin, isLoading, error } = useAdminAuth()
+  const location = useLocation()
 
   // Mostrar loading mientras se verifica la autenticación
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Verificando permisos...</p>
         </div>
       </div>
     )
   }
 
-  // Si hay error o no hay usuario, redirigir al login
+  // Redirección inteligente según el tipo de ruta requerida
   if (error || !user) {
-    return <Navigate to="/login" replace />
+    const currentPath = location.pathname
+
+    // Si es una ruta de admin, redirigir al login de admin
+    if (requireAdmin || currentPath.startsWith('/admin')) {
+      return (
+        <Navigate
+          to={`/admin/login?redirect=${encodeURIComponent(currentPath)}`}
+          replace
+        />
+      )
+    }
+
+    // Para rutas de usuario, redirigir al login normal
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(currentPath)}`}
+        replace
+      />
+    )
   }
 
   // Si se requiere admin y no es admin, mostrar acceso denegado
@@ -50,9 +69,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             </button>
             <button
               onClick={() => (window.location.href = '/dashboard')}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full bg-brand-primary text-white px-6 py-3 rounded-lg hover:bg-brand-secondary transition-colors"
             >
-              🏠 Ir al Dashboard
+              🏠 Ir a Mi Cuenta
             </button>
           </div>
           <p className="text-sm text-gray-500 mt-6">

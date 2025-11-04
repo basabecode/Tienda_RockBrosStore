@@ -79,6 +79,19 @@ export default {
           dark: '#383838', // Gris oscuro - Oscuro
           contrast: '#000000', // Negro - Máximo contraste
         },
+        // 🎯 Accessibility-first color tokens
+        accessible: {
+          'text-primary': 'hsl(var(--foreground))', // Texto principal (blanco)
+          'text-secondary': 'hsl(var(--secondary-text))', // Texto secundario accesible
+          'text-subtle': 'hsl(var(--subtle-text))', // Texto terciario
+          'text-muted': 'hsl(var(--muted-foreground))', // Texto muted corregido
+          'icon-secondary': 'hsl(var(--icon-secondary))', // Iconos decorativos
+        },
+        // Legacy color system (for compatibility with existing components)
+        'verde-neon': '#0FFF95',
+        'verde-bosque': '#06BA63',
+        'gris-oscuro': '#383838',
+        'gris-medio': '#656565',
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useNavigate } from 'react-router-dom'
 import {
   ShoppingCart,
   Plus,
@@ -36,9 +37,18 @@ interface CartItemProps {
   }
   onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
+  getItemKey: (item: CartItemProps['item']) => string
 }
 
-function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
+function CartItem({
+  item,
+  onUpdateQuantity,
+  onRemove,
+  getItemKey,
+}: CartItemProps) {
+  // Implementación correcta para obtener la clave única del item
+  // Esta función ya se recibe como prop desde CartSheet
+
   return (
     <div className="flex items-start space-x-4 py-4">
       <div className="flex-shrink-0">
@@ -90,7 +100,7 @@ function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-red-500 hover:text-red-700"
-              onClick={() => onRemove(item.id)}
+              onClick={() => onRemove(getItemKey(item))}
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -108,8 +118,15 @@ interface CartSheetProps {
 export function CartSheet({ children }: CartSheetProps) {
   const [open, setOpen] = useState(false)
   const { isAuthenticated } = useAuth()
-  const { items, itemCount, total, updateQuantity, removeItem, clearCart } =
-    useCart()
+  const {
+    items,
+    itemCount,
+    total,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    getItemKey,
+  } = useCart()
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     if (quantity === 0) {
@@ -119,27 +136,26 @@ export function CartSheet({ children }: CartSheetProps) {
     }
   }
 
+  const navigate = useNavigate()
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      toast({
-        title: 'Inicia sesión',
-        description: 'Necesitas iniciar sesión para realizar el checkout',
-        variant: 'destructive',
-      })
+      // Guardar la intención de ir al checkout
+      localStorage.setItem('intendedRoute', '/checkout')
+      setOpen(false)
+      setTimeout(() => {
+        document.getElementById('auth-dialog-trigger')?.click()
+      }, 300)
       return
     }
-
-    // TODO: Implementar proceso de checkout
-    toast({
-      title: 'Función en desarrollo',
-      description: 'El proceso de checkout estará disponible pronto',
-    })
+    setOpen(false)
+    navigate('/checkout')
   }
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'COP',
+      minimumFractionDigits: 0,
     }).format(price)
   }
 
@@ -194,11 +210,12 @@ export function CartSheet({ children }: CartSheetProps) {
               <ScrollArea className="flex-1 -mx-6 px-6">
                 <div className="space-y-0">
                   {items.map((item, index) => (
-                    <div key={item.id}>
+                    <div key={getItemKey(item)}>
                       <CartItem
                         item={item}
                         onUpdateQuantity={handleUpdateQuantity}
                         onRemove={removeItem}
+                        getItemKey={getItemKey}
                       />
                       {index < items.length - 1 && <Separator />}
                     </div>
@@ -226,7 +243,11 @@ export function CartSheet({ children }: CartSheetProps) {
                 <div className="space-y-2">
                   {!isAuthenticated ? (
                     <AuthDialog defaultTab="login">
-                      <Button className="w-full" size="lg">
+                      <Button
+                        id="auth-dialog-trigger"
+                        className="w-full"
+                        size="lg"
+                      >
                         <CreditCard className="mr-2 h-4 w-4" />
                         Iniciar sesión para comprar
                       </Button>
@@ -253,7 +274,7 @@ export function CartSheet({ children }: CartSheetProps) {
 
                 <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
                   <Truck className="h-3 w-3" />
-                  <span>Envío gratis en pedidos superiores a €50</span>
+                  <span>Envío gratis en pedidos superiores a $150.000 COP</span>
                 </div>
 
                 {items.length > 0 && (

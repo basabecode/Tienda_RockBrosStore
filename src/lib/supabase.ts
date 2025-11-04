@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-// Cliente público (no tipado) y fail-fast
+// Cliente optimizado para performance
 export const supabase: SupabaseClient = createClient(
   supabaseUrl,
   supabaseAnonKey,
@@ -17,6 +17,21 @@ export const supabase: SupabaseClient = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+    db: {
+      schema: 'public',
+    },
+    global: {
+      headers: {
+        'Cache-Control': 'max-age=300', // Cache 5 minutos
+      },
+    },
+    // Optimizaciones de rendimiento
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
     },
   }
 ) as SupabaseClient

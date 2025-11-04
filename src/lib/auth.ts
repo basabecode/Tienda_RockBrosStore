@@ -81,9 +81,35 @@ export async function getCurrentUser(): Promise<{
         // Crear usuario con datos de profile
         extendedUser = createUserFromProfile(user, profile as ProfileFromDB)
       } else {
-        // Profile no existe, usar datos de auth
+        // Profile no existe, intentar crearlo
         console.warn('Profile no encontrado para usuario:', user.id)
-        extendedUser = createUserFromAuth(user)
+        try {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email,
+              full_name: user.user_metadata?.full_name || null,
+              role: 'user',
+              is_active: true,
+            })
+            .select()
+            .single()
+
+          if (createError) {
+            console.warn('Error creando profile:', createError)
+            extendedUser = createUserFromAuth(user)
+          } else {
+            console.log('✅ Profile creado automáticamente para:', user.id)
+            extendedUser = createUserFromProfile(
+              user,
+              newProfile as ProfileFromDB
+            )
+          }
+        } catch (createError) {
+          console.warn('Excepción creando profile:', createError)
+          extendedUser = createUserFromAuth(user)
+        }
       }
     } catch (profileError) {
       console.warn('Excepción al consultar profiles:', profileError)
@@ -382,6 +408,31 @@ export async function updateProfile(updates: Partial<Profile>) {
     return { data, error }
   } catch (error) {
     console.error('Error en updateProfile:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+// Función para crear profile faltante
+export async function createMissingProfile(
+  userId: string,
+  userData?: { email?: string; full_name?: string }
+) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        email: userData?.email || null,
+        full_name: userData?.full_name || null,
+        role: 'user',
+        is_active: true,
+      })
+      .select()
+      .single()
+
+    return { data, error }
+  } catch (error) {
+    console.error('Error creando profile faltante:', error)
     return { data: null, error: error as Error }
   }
 }

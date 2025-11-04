@@ -104,14 +104,15 @@ const Addresses = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            📍 Mis Direcciones
-          </h1>
-          <p className="text-gray-600">Gestiona tus direcciones de envío</p>
+          <h1 className="text-2xl font-bold text-white">📍 Mis Direcciones</h1>
+          {/* ✅ CORREGIDO: text-gray-600 → text-muted-accessible para mejor contraste */}
+          <p className="text-muted-accessible">
+            Gestiona tus direcciones de envío
+          </p>
         </div>
         <Button
           onClick={() => setIsAddingNew(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-brand-primary hover:bg-brand-secondary text-white"
         >
           ➕ Nueva Dirección
         </Button>
@@ -119,7 +120,7 @@ const Addresses = () => {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
         </div>
       )}
 
@@ -234,8 +235,10 @@ const Addresses = () => {
           {items.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
+                {/* ✅ MANTIENE: text-gray-400 para emoji está OK (no es texto crítico) */}
                 <div className="text-gray-400 text-6xl mb-4">📍</div>
-                <p className="text-gray-500 mb-4">
+                {/* ✅ CORREGIDO: text-gray-500 → text-subtle-dark para mejor contraste */}
+                <p className="text-subtle-dark mb-4">
                   No tienes direcciones guardadas
                 </p>
                 <Button onClick={() => setIsAddingNew(true)}>
@@ -252,14 +255,17 @@ const Addresses = () => {
                       <h3 className="font-semibold text-lg mb-2">
                         {address.label || 'Sin etiqueta'}
                       </h3>
-                      <p className="text-gray-600">{address.address}</p>
-                      <p className="text-gray-600">
+                      {/* ✅ CORREGIDO: text-gray-600 → text-secondary-dark para direcciones */}
+                      <p className="text-secondary-dark">{address.address}</p>
+                      <p className="text-secondary-dark">
                         {address.city && `${address.city}`}
                         {address.department && `, ${address.department}`}
                         {address.postal_code && ` ${address.postal_code}`}
                       </p>
                       {address.phone && (
-                        <p className="text-gray-600">📞 {address.phone}</p>
+                        <p className="text-secondary-dark">
+                          📞 {address.phone}
+                        </p>
                       )}
                     </div>
 

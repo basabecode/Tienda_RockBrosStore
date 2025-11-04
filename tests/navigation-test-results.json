@@ -1,0 +1,97 @@
+{
+  "timestamp": "2025-10-29T19:01:26.221Z",
+  "scenarios": {
+    "unauthenticated": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Rutas Públicas Disponibles",
+          "status": "PASS",
+          "message": "4/4 rutas públicas disponibles"
+        },
+        {
+          "name": "Header Navegación Pública",
+          "status": "PASS",
+          "message": "4/5 elementos de navegación pública encontrados"
+        },
+        {
+          "name": "Protección de Rutas Privadas",
+          "status": "PASS",
+          "message": "2/2 rutas críticas protegidas"
+        },
+        {
+          "name": "Redirecciones de Compatibilidad",
+          "status": "PASS",
+          "message": "Redirecciones legacy funcionando"
+        }
+      ]
+    },
+    "user": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Rutas de Usuario (/cuenta/*)",
+          "status": "PASS",
+          "message": "6/6 rutas de usuario disponibles"
+        },
+        {
+          "name": "ClientUserMenu Completo",
+          "status": "PASS",
+          "message": "6/6 items de menú funcionando"
+        },
+        {
+          "name": "DashboardOverview Navegación",
+          "status": "PASS",
+          "message": "4/4 enlaces de navegación funcionando"
+        },
+        {
+          "name": "DashboardLayout para Usuario",
+          "status": "PASS",
+          "message": "4/4 características de layout presentes"
+        }
+      ]
+    },
+    "admin": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Rutas Admin (/admin/*)",
+          "status": "PASS",
+          "message": "4/4 rutas admin disponibles"
+        },
+        {
+          "name": "Protección Admin (requireAdmin)",
+          "status": "PASS",
+          "message": "Protección admin configurada"
+        },
+        {
+          "name": "AdminUserMenu Completo",
+          "status": "PASS",
+          "message": "5/5 items de menú admin funcionando"
+        },
+        {
+          "name": "AdminDashboardLayout",
+          "status": "PASS",
+          "message": "4/4 características admin presentes"
+        },
+        {
+          "name": "AdminEcommerceDashboard Funcional",
+          "status": "PASS",
+          "message": "4/4 características admin dashboard"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "successRate": 100
+  }
+}

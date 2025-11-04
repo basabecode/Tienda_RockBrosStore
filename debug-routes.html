@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Debug Routes - RockBros Store</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .route {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .status {
+        font-weight: bold;
+      }
+      .working {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Debug Routes - RockBros Store</h1>
+    <p>Prueba estas rutas para verificar la navegación:</p>
+
+    <div class="route">
+      <h3>Página Principal</h3>
+      <a href="http://localhost:8081/">http://localhost:8081/</a>
+      <div id="home-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Login</h3>
+      <a href="http://localhost:8081/login">http://localhost:8081/login</a>
+      <div id="login-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Mi Cuenta (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta">http://localhost:8081/cuenta</a>
+      <div id="cuenta-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Perfil (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta/perfil"
+        >http://localhost:8081/cuenta/perfil</a
+      >
+      <div id="perfil-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Pedidos (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta/pedidos"
+        >http://localhost:8081/cuenta/pedidos</a
+      >
+      <div id="pedidos-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Favoritos (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta/favoritos"
+        >http://localhost:8081/cuenta/favoritos</a
+      >
+      <div id="favoritos-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Direcciones (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta/direcciones"
+        >http://localhost:8081/cuenta/direcciones</a
+      >
+      <div id="direcciones-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Seguridad (Requiere Login)</h3>
+      <a href="http://localhost:8081/cuenta/seguridad"
+        >http://localhost:8081/cuenta/seguridad</a
+      >
+      <div id="seguridad-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Admin Login</h3>
+      <a href="http://localhost:8081/admin/login"
+        >http://localhost:8081/admin/login</a
+      >
+      <div id="admin-login-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <div class="route">
+      <h3>Admin Dashboard (Requiere Admin)</h3>
+      <a href="http://localhost:8081/admin">http://localhost:8081/admin</a>
+      <div id="admin-status" class="status">Estado: Por probar</div>
+    </div>
+
+    <h2>Diagnóstico</h2>
+    <p>Si las rutas protegidas (/cuenta/*) no funcionan:</p>
+    <ol>
+      <li>Asegúrate de estar logueado primero</li>
+      <li>Revisa la consola del navegador para errores</li>
+      <li>Verifica que Supabase esté configurado correctamente</li>
+    </ol>
+
+    <script>
+      // Script simple para probar las rutas
+      function testRoute(url, statusId) {
+        fetch(url)
+          .then(response => {
+            const status = document.getElementById(statusId)
+            if (response.ok) {
+              status.textContent = 'Estado: ✓ Funciona'
+              status.className = 'status working'
+            } else {
+              status.textContent = `Estado: ✗ Error ${response.status}`
+              status.className = 'status error'
+            }
+          })
+          .catch(error => {
+            const status = document.getElementById(statusId)
+            status.textContent = 'Estado: ✗ Error de red'
+            status.className = 'status error'
+          })
+      }
+
+      // Auto-test algunas rutas públicas
+      setTimeout(() => {
+        testRoute('http://localhost:8081/', 'home-status')
+        testRoute('http://localhost:8081/login', 'login-status')
+        testRoute('http://localhost:8081/admin/login', 'admin-login-status')
+      }, 1000)
+    </script>
+  </body>
+</html>

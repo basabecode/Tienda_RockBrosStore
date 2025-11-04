@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import {
   getCurrentUser,
@@ -9,6 +10,11 @@ import {
   clearUserCache,
   refreshCurrentUser,
 } from '../lib/auth'
+import {
+  performSessionTermination,
+  verifySessionCleanup,
+} from '../utils/session-cleanup'
+// import { useAppStateCleanup } from './use-app-state-cleanup'
 import type { User } from '../lib/auth'
 
 export type { User }
@@ -17,6 +23,8 @@ export function useAuth() {
   const [user, setUser] = React.useState<User | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [initialized, setInitialized] = React.useState(false)
+  const queryClient = useQueryClient()
+  // const { clearAllAppState } = useAppStateCleanup()
 
   React.useEffect(() => {
     let isMounted = true
@@ -75,6 +83,16 @@ export function useAuth() {
             const { user } = await getCurrentUser()
             setUser(user)
             setLoading(false)
+
+            // Verificar si hay una ruta pendiente para redireccionar
+            const intendedRoute = localStorage.getItem('intendedRoute')
+            if (intendedRoute) {
+              localStorage.removeItem('intendedRoute')
+              // Dar tiempo para que la UI se actualice antes de navegar
+              setTimeout(() => {
+                window.location.href = intendedRoute
+              }, 500)
+            }
           }, 100)
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           console.log('Token renovado')
@@ -179,26 +197,84 @@ export function useAuth() {
   }, [])
 
   const signOut = React.useCallback(async () => {
+    console.log('🔐 Iniciando proceso de Session Termination...')
     setLoading(true)
+
     try {
-      // Limpiar cache antes del logout
+      // 1. Limpiar cache de usuario de Supabase
+      console.log('🧹 Limpiando cache de usuario...')
       clearUserCache()
 
+      // 2. Cerrar sesión en Supabase
+      console.log('🔐 Cerrando sesión en Supabase...')
       const { error } = await authSignOut()
+
       if (!error) {
+        // 3. Resetear estado de usuario
+        console.log('👤 Reseteando estado de usuario...')
         setUser(null)
-        // Limpiar todo el localStorage relacionado
-        localStorage.removeItem('cart')
-        localStorage.removeItem('favorites')
+
+        // 4. Limpiar estados de contexto mediante localStorage (evita dependencias circulares)
+        console.log('🧹 Limpiando estados de contexto...')
+        try {
+          // Limpiar carrito y favoritos directamente desde localStorage
+          localStorage.removeItem('cart')
+          localStorage.removeItem('favorites')
+          localStorage.removeItem('favorites_guest')
+          console.log('✅ Estados de contexto limpiados exitosamente')
+        } catch (stateError) {
+          console.warn('⚠️ Error limpiando estados de contexto:', stateError)
+        }
+
+        // 5. Realizar limpieza completa de sesión (localStorage, sessionStorage, cookies, React Query)
+        console.log('🧹 Ejecutando limpieza completa de sesión...')
+        performSessionTermination(queryClient)
+
+        // 6. Verificar que la limpieza fue exitosa
+        const cleanupSuccess = verifySessionCleanup()
+        if (cleanupSuccess) {
+          console.log('✅ Session Termination completada exitosamente')
+        } else {
+          console.warn('⚠️ Session Termination completada con advertencias')
+        }
+
+        // 7. Forzar recarga de la página para asegurar estado inicial
+        setTimeout(() => {
+          console.log(
+            '🔄 Recargando aplicación para asegurar estado inicial...'
+          )
+          window.location.href = '/login'
+        }, 100)
       }
+
       setLoading(false)
       return { error }
     } catch (error) {
-      console.error('Error en signOut:', error)
+      console.error('❌ Error durante Session Termination:', error)
+
+      // Aún así intentar limpieza básica
+      try {
+        localStorage.removeItem('cart')
+        localStorage.removeItem('favorites')
+        localStorage.removeItem('favorites_guest')
+      } catch (stateError) {
+        console.warn(
+          '⚠️ Error en limpieza de emergencia de estados:',
+          stateError
+        )
+      }
+      performSessionTermination(queryClient)
+      setUser(null)
       setLoading(false)
+
+      // Redirigir a login en caso de error
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 100)
+
       return { error: error as Error }
     }
-  }, [])
+  }, [queryClient])
 
   // Función para refrescar usuario manualmente
   const refreshUser = React.useCallback(async () => {

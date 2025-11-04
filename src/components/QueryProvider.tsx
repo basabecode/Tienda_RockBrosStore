@@ -1,12 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 
-// Configuración del cliente de React Query
+// Configuración optimizada del cliente de React Query
 function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // 1 minuto por defecto
+        staleTime: 5 * 60 * 1000, // 5 minutos para productos (datos que no cambian frecuentemente)
+        gcTime: 10 * 60 * 1000, // 10 minutos en cache (antes cacheTime)
+        refetchOnWindowFocus: false, // No recargar al cambiar de ventana
+        refetchOnMount: 'always', // Recargar al montar si está stale
+        refetchOnReconnect: 'always', // Recargar al reconectar
         retry: (failureCount, error) => {
           // No reintentar en errores 4xx
           const errorWithStatus = error as { status?: number }
@@ -19,9 +23,11 @@ function createQueryClient() {
           }
           return failureCount < 3
         },
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
       mutations: {
         retry: false,
+        gcTime: 5 * 60 * 1000, // 5 minutos para mutations
       },
     },
   })

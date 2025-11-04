@@ -1,129 +1,133 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Home, Shield } from 'lucide-react'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import { useAuth } from '@/hooks/use-auth'
 
+// Layout refactorizado: elimina duplicación, mejora UX y consistencia
 const DashboardLayout = () => {
   const navigate = useNavigate()
-  const { isAdmin } = useAuth()
+  const { isAuthenticated } = useAuth()
 
-  // Layout para administradores
-  if (isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-        <Header />
-        <div className="container mx-auto py-8">
-          {/* Breadcrumb y botón volver para administradores */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Volver a la Tienda</span>
-              </Button>
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
-                <Home className="h-4 w-4" />
-                <span>/</span>
-                <Shield className="h-4 w-4" />
-                <span>Panel de Administración</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Contenido principal de administrador - sin sidebar */}
-          <div className="w-full">
-            <Outlet />
-          </div>
-        </div>
-        {/* Sin footer para administradores */}
-      </div>
-    )
+  // Solo usuarios autenticados pueden ver el dashboard
+  if (!isAuthenticated) {
+    return null
   }
 
-  // Layout para usuarios regulares
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="container mx-auto py-8 mt-20">
-        {/* Breadcrumb y botón volver */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Volver a la Tienda</span>
-            </Button>
-            <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
-              <Home className="h-4 w-4" />
-              <span>/</span>
-              <span>Mi Cuenta</span>
-            </div>
-          </div>
+      {/* Header limpio y profesional */}
+      <header className="w-full border-b border-gray-200 bg-white shadow-sm flex items-center justify-between px-6 py-4 fixed top-0 left-0 z-40">
+        <div className="flex items-center space-x-3">
+          <img src="/favicon.ico" alt="RockBros Logo" className="w-10 h-10" />
+          <span className="font-bold text-xl text-gray-900">RockBrosShop</span>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="font-medium hover:bg-green-50 hover:text-green-700 hover:border-green-300"
+        >
+          Volver a la Tienda
+        </Button>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar de navegación */}
-          <div className="lg:col-span-1">
-            <DashboardSidebar />
-          </div>
+      {/* Layout principal con espaciado mejorado */}
+      <div className="max-w-7xl mx-auto pt-20 pb-10 px-6">
+        <div className="flex gap-8 mt-6">
+          {/* Menú lateral mejorado: mejor contraste, espaciado y tipografía */}
+          <aside className="w-72 bg-white border border-gray-200 rounded-lg shadow-sm p-6 h-fit">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 pb-4 border-b border-gray-100">
+              Mi Cuenta
+            </h2>
+            <nav className="flex flex-col gap-2">
+              <NavLink
+                to="/dashboard"
+                end
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Mi Panel
+              </NavLink>
+              <NavLink
+                to="/dashboard/perfil"
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Mi Perfil
+              </NavLink>
+              <NavLink
+                to="/dashboard/direcciones"
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Direcciones
+              </NavLink>
+              <NavLink
+                to="/dashboard/pedidos"
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Mis Pedidos
+              </NavLink>
+              <NavLink
+                to="/dashboard/favoritos"
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Favoritos
+              </NavLink>
+              <NavLink
+                to="/dashboard/seguridad"
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium flex items-center ${
+                    isActive
+                      ? 'bg-green-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:pl-6'
+                  }`
+                }
+              >
+                Seguridad
+              </NavLink>
+            </nav>
 
-          {/* Contenido principal */}
-          <div className="lg:col-span-3">
+            {/* Información adicional del sidebar */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center">
+                RockBrosShop v2.0
+              </p>
+            </div>
+          </aside>
+
+          {/* Contenido principal con mejor espaciado */}
+          <main className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <Outlet />
-          </div>
+          </main>
         </div>
       </div>
-      <Footer />
-    </div>
-  )
-}
-
-// Componente de sidebar para el dashboard
-const DashboardSidebar = () => {
-  const navigation = [
-    { name: 'Resumen', href: '/dashboard', icon: '📊' },
-    { name: 'Perfil', href: '/dashboard/profile', icon: '👤' },
-    { name: 'Direcciones', href: '/dashboard/addresses', icon: '📍' },
-    { name: 'Pedidos', href: '/dashboard/orders', icon: '📦' },
-    { name: 'Favoritos', href: '/dashboard/favorites', icon: '❤️' },
-    {
-      name: 'Cambiar Contraseña',
-      href: '/dashboard/change-password',
-      icon: '🔐',
-    },
-  ]
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-semibold mb-4">Mi Cuenta</h2>
-      <nav className="space-y-2">
-        {navigation.map(item => (
-          <NavLink
-            key={item.name}
-            to={item.href}
-            className={({ isActive }) =>
-              `flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`
-            }
-          >
-            <span className="mr-3 text-lg">{item.icon}</span>
-            {item.name}
-          </NavLink>
-        ))}
-      </nav>
     </div>
   )
 }

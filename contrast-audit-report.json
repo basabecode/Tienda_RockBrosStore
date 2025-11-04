@@ -1,0 +1,103 @@
+{
+  "critical": [],
+  "high": [],
+  "moderate": [],
+  "good": [
+    {
+      "file": "src\\components\\FilterSidebar.tsx",
+      "pattern": "text-white",
+      "count": 14
+    },
+    {
+      "file": "src\\components\\Footer.tsx",
+      "pattern": "text-white",
+      "count": 9
+    },
+    {
+      "file": "src\\components\\HeroBanner.tsx",
+      "pattern": "text-white",
+      "count": 2
+    },
+    {
+      "file": "src\\components\\layouts\\AdminLayout.tsx",
+      "pattern": "text-white",
+      "count": 12
+    },
+    {
+      "file": "src\\components\\layouts\\UserLayout.tsx",
+      "pattern": "text-white",
+      "count": 9
+    },
+    {
+      "file": "src\\components\\layouts\\UserLayout.tsx",
+      "pattern": "text-gray-300",
+      "count": 4
+    },
+    {
+      "file": "src\\components\\layouts\\UserLayout.tsx",
+      "pattern": "text-gray-400",
+      "count": 1
+    },
+    {
+      "file": "src\\components\\ProductGrid.tsx",
+      "pattern": "text-white",
+      "count": 14
+    },
+    {
+      "file": "src\\components\\RecentlyViewed.tsx",
+      "pattern": "text-white",
+      "count": 2
+    },
+    {
+      "file": "src\\components\\SimpleSearchBar.tsx",
+      "pattern": "text-white",
+      "count": 2
+    },
+    {
+      "file": "src\\components\\ui\\button.tsx",
+      "pattern": "text-white",
+      "count": 1
+    },
+    {
+      "file": "src\\pages\\admin\\AdminDashboard.tsx",
+      "pattern": "text-white",
+      "count": 11
+    },
+    {
+      "file": "src\\pages\\admin\\AdminProducts.tsx",
+      "pattern": "text-white",
+      "count": 2
+    },
+    {
+      "file": "src\\pages\\admin\\AdminSales.tsx",
+      "pattern": "text-white",
+      "count": 3
+    },
+    {
+      "file": "src\\pages\\admin\\AdminSettings.tsx",
+      "pattern": "text-white",
+      "count": 1
+    },
+    {
+      "file": "src\\pages\\admin\\AdminUsers.tsx",
+      "pattern": "text-white",
+      "count": 2
+    },
+    {
+      "file": "src\\pages\\ProductDetail.tsx",
+      "pattern": "text-gray-300",
+      "count": 1
+    },
+    {
+      "file": "src\\pages\\user\\UserProfile.tsx",
+      "pattern": "text-white",
+      "count": 4
+    }
+  ],
+  "summary": {
+    "totalFiles": 110,
+    "filesWithIssues": 0,
+    "totalIssues": 117,
+    "criticalIssues": 117
+  }
+}

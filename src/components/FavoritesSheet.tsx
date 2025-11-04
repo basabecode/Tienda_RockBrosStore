@@ -10,75 +10,88 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Heart, X, ShoppingCart } from 'lucide-react'
-import { useFavorites } from '@/hooks/use-favorites.tsx'
+import { useUnifiedFavorites } from '@/hooks/useUnifiedFavorites'
+import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { AuthDialog } from './AuthDialog'
 import { toast } from '@/hooks/use-toast'
+import { favoriteToCartItem } from '@/utils/favorites-helpers'
+
+import type { UnifiedFavoriteRecord } from '@/types/favorites'
 
 interface FavoriteItemProps {
-  item: {
-    id: string
-    name: string
-    price: number
-    image?: string
-    stock?: number
-  }
-  onRemove: (id: string) => void
-  onAddToCart: (item: {
-    id: string
-    name: string
-    price: number
-    image?: string
-    stock?: number
-  }) => void
+  favorite: UnifiedFavoriteRecord
+  onRemove: (favoriteId: string, productName: string) => void
+  onAddToCart: (favoriteId: string, productName: string) => void
 }
 
-function FavoriteItem({ item, onRemove, onAddToCart }: FavoriteItemProps) {
+function FavoriteItem({ favorite, onRemove, onAddToCart }: FavoriteItemProps) {
+  const product = favorite.products
+
+  if (!product) {
+    return null
+  }
+
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'COP',
+      minimumFractionDigits: 0,
     }).format(price)
   }
+
+  const imageUrl = product.main_image || product.image_url || '/placeholder.svg'
+  const isOutOfStock = (product.stock || 0) === 0
 
   return (
     <div className="flex items-start space-x-4 py-4">
       <div className="flex-shrink-0">
         <img
-          src={item.image || '/placeholder.svg'}
-          alt={item.name}
+          src={imageUrl}
+          alt={product.name}
           className="h-16 w-16 rounded-md object-cover"
         />
       </div>
 
       <div className="flex-1 space-y-2">
-        <h4 className="text-sm font-medium line-clamp-2">{item.name}</h4>
+        <h4 className="text-sm font-medium line-clamp-2">{product.name}</h4>
+
+        {product.brand && (
+          <p className="text-xs text-muted-foreground">{product.brand}</p>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-primary">
-            {formatPrice(item.price)}
+            {formatPrice(product.price)}
           </span>
 
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onAddToCart(item)}
-              disabled={item.stock === 0}
-            >
-              <ShoppingCart className="h-3 w-3 mr-1" />
-              {item.stock === 0 ? 'Sin stock' : 'Agregar'}
-            </Button>
+          {product.stock !== undefined && (
+            <span className="text-xs text-muted-foreground">
+              Stock: {product.stock}
+            </span>
+          )}
+        </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-red-500 hover:text-red-700"
-              onClick={() => onRemove(item.id)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onAddToCart(favorite.id, product.name)}
+            disabled={isOutOfStock}
+            className="flex-1"
+          >
+            <ShoppingCart className="h-3 w-3 mr-1" />
+            {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-red-500 hover:text-red-700"
+            onClick={() => onRemove(favorite.id, product.name)}
+          >
+            <X className="h-3 w-3" />
+          </Button>
         </div>
       </div>
     </div>
@@ -92,24 +105,68 @@ interface FavoritesSheetProps {
 export function FavoritesSheet({ children }: FavoritesSheetProps) {
   const [open, setOpen] = useState(false)
   const { isAuthenticated } = useAuth()
-  const { favorites, favoriteCount, removeFavorite } = useFavorites()
+  const { favorites, favoriteCount, removeFavorite } = useUnifiedFavorites()
+  const { addItem } = useCart()
 
-  const handleAddToCart = (item: {
-    id: string
-    name: string
-    price: number
-    image?: string
-    stock?: number
-  }) => {
-    // TODO: Integrar con useCart
-    toast({
-      title: 'Función en desarrollo',
-      description: 'La integración con el carrito estará disponible pronto',
-    })
+  const handleAddToCart = (favoriteId: string, productName: string) => {
+    try {
+      // Encontrar el favorito correspondiente
+      const favorite = favorites.find(fav => fav.id === favoriteId)
+      if (!favorite?.products) {
+        toast({
+          title: 'Error',
+          description: 'No se pudo encontrar la información del producto',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      // Convertir a formato de carrito
+      const cartItem = favoriteToCartItem(favorite.products)
+      if (!cartItem) {
+        toast({
+          title: 'Error',
+          description:
+            'El producto no tiene la información necesaria para agregarlo al carrito',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      // Agregar al carrito
+      addItem(cartItem)
+
+      toast({
+        title: '¡Agregado al carrito!',
+        description: `${productName} se ha agregado al carrito de compras`,
+      })
+    } catch (error) {
+      console.error('Error adding to cart from favorites:', error)
+      toast({
+        title: 'Error',
+        description: 'No se pudo agregar el producto al carrito',
+        variant: 'destructive',
+      })
+    }
   }
 
-  const handleRemoveFavorite = (id: string) => {
-    removeFavorite(id)
+  const handleRemoveFavorite = async (
+    favoriteId: string,
+    productName: string
+  ) => {
+    try {
+      await removeFavorite(favoriteId)
+      toast({
+        title: 'Eliminado de favoritos',
+        description: `${productName} se ha eliminado de tus favoritos`,
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar el producto de favoritos',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -176,10 +233,10 @@ export function FavoritesSheet({ children }: FavoritesSheetProps) {
           ) : (
             <ScrollArea className="flex-1 -mx-6 px-6">
               <div className="space-y-0">
-                {favorites.map((item, index) => (
-                  <div key={item.id}>
+                {favorites.map((favorite, index) => (
+                  <div key={favorite.id}>
                     <FavoriteItem
-                      item={item}
+                      favorite={favorite}
                       onRemove={handleRemoveFavorite}
                       onAddToCart={handleAddToCart}
                     />

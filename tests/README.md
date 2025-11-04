@@ -9,40 +9,51 @@ Bienvenido a la carpeta de testing de **Tienda RockBros Store**. Aquí se encuen
 ```
 tests/
 ├── README.md (este archivo)
-├── test-supabase.js              # Suite completa de tests
-├── verify-supabase.js            # Verificación rápida de conexión
-├── supabase-test.html            # Tests en navegador
-├── cleanup-temp-files.sh         # Limpieza de archivos temporales
-├── cleanup-unused-deps.sh        # Limpieza de dependencias
-└── identify-temp-files.sh        # Identificar archivos temporales
+├── test-supabase.js                    # Suite completa de tests Supabase
+├── verify-supabase.js                  # Verificación rápida de conexión
+├── supabase-test.html                  # Tests en navegador
+├── validate-error-handling.js          # ✨ Tests de error handling
+├── validate-routes-navigation.js       # ✨ Tests de rutas y navegación
+├── run-all-tests.js                    # ✨ Ejecutor principal de tests
+├── cleanup-temp-files.sh               # Limpieza de archivos temporales
+├── cleanup-unused-deps.sh              # Limpieza de dependencias
+└── identify-temp-files.sh              # Identificar archivos temporales
 ```
 
 ---
 
 ## 🚀 Ejecución Rápida
 
-### Test Básico (Recomendado para empezar)
+### ✨ Tests de Validación (NUEVO)
 
 ```bash
+# Ejecutar todos los tests de validación
+npm run test:all
+
+# Solo test de error handling
+npm run test:error-handling
+
+# Solo test de rutas y navegación
+npm run test:routes
+
+# Alias para todos los tests
+npm run test:validation
+```
+
+### Tests de Supabase
+
+```bash
+# Test básico (Recomendado para empezar)
 npm run test:supabase
-```
 
-### Test Detallado
-
-```bash
+# Test detallado
 npm run test:supabase:verbose
-```
 
-### Test en Navegador
-
-```bash
+# Test en navegador
 npm run test:supabase:html
 # Luego abre: http://localhost:3001/supabase-test.html
-```
 
-### Verificación Rápida
-
-```bash
+# Verificación rápida
 npm run verify:supabase
 ```
 
@@ -317,6 +328,112 @@ watch -n 5 "npm run verify:supabase"
 
 ```bash
 npm run test:supabase:json > test-results.json
+```
+
+---
+
+## ✨ NUEVOS TESTS DE VALIDACIÓN
+
+### 🧪 validate-error-handling.js
+
+Valida que las páginas críticas implementen correctamente el manejo de errores:
+
+**Qué valida:**
+
+- ✅ Estados de error con mensajes claros
+- ✅ Estados de carga (loading/skeleton)
+- ✅ Lógica de retry para recuperación
+- ✅ Error boundaries para captura de errores
+- ✅ Try/catch en operaciones async
+- ✅ Notificaciones de usuario (toasts)
+
+**Páginas analizadas:**
+
+- DashboardOverview.tsx
+- Orders.tsx
+- Favorites.tsx
+- ChangePassword.tsx
+- AdminEcommerceDashboard.tsx
+
+**Uso:**
+
+```bash
+npm run test:error-handling
+node tests/validate-error-handling.js
+```
+
+### 🧪 validate-routes-navigation.js
+
+Valida la configuración correcta de rutas y navegación:
+
+**Qué valida:**
+
+- ✅ Configuración de rutas en App.tsx
+- ✅ Componentes ProtectedRoute y AdminRoute
+- ✅ Layouts y estructura consistente
+- ✅ Páginas críticas implementadas
+- ✅ Componentes de navegación funcionales
+
+**Componentes analizados:**
+
+- App.tsx (configuración de rutas)
+- ProtectedRoute.tsx & AdminRoute.tsx
+- Layouts (DashboardLayout, AdminPageLayout, etc.)
+- Páginas críticas (Login, Dashboard, etc.)
+- Componentes de navegación (Header, Sidebar, etc.)
+
+**Uso:**
+
+```bash
+npm run test:routes
+node tests/validate-routes-navigation.js
+```
+
+### 🧪 run-all-tests.js
+
+Ejecutor principal que combina todos los tests y genera un reporte completo:
+
+**Características:**
+
+- ✅ Ejecuta todos los tests de validación
+- ✅ Genera reporte final con scoring
+- ✅ Crea archivo JSON con resultados detallados
+- ✅ Proporciona plan de acción recomendado
+- ✅ Estadísticas y métricas completas
+
+**Uso:**
+
+```bash
+npm run test:all
+npm run test:validation
+node tests/run-all-tests.js
+```
+
+**Output esperado:**
+
+- Score general del proyecto
+- Detalles por componente
+- Recomendaciones específicas
+- Plan de acción prioritario
+- Reporte JSON en `tests/test-results.json`
+
+---
+
+## 📊 Interpretación de Resultados
+
+### Scoring System
+
+- **90-100%**: 🏆 Excelente - Mantener el nivel
+- **80-89%**: ✅ Muy bueno - Pequeñas mejoras
+- **70-79%**: ⚡ Bueno - Algunas mejoras recomendadas
+- **60-69%**: ⚠️ Aceptable - Necesita mejoras
+- **<60%**: 🚨 Crítico - Requiere atención inmediata
+
+### Archivos de Output
+
+```
+tests/
+└── test-results.json    # Reporte detallado en JSON
 ```
 
 ---

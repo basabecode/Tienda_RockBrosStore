@@ -29,7 +29,7 @@ const Footer = () => {
       name: 'Facebook',
       icon: Facebook,
       href: '#',
-      color: 'hover:text-blue-600',
+      color: 'hover:text-brand-primary',
     },
     {
       name: 'Instagram',
@@ -41,7 +41,7 @@ const Footer = () => {
       name: 'LinkedIn',
       icon: Linkedin,
       href: '#',
-      color: 'hover:text-blue-700',
+      color: 'hover:text-brand-primary',
     },
   ]
 
@@ -62,7 +62,7 @@ const Footer = () => {
               </span>
             </div>
 
-            <p className="text-gris-medio mb-6 leading-relaxed">
+            <p className="text-white-900 mb-6 leading-relaxed">
               Tu tienda de confianza en Colombia para accesorios y repuestos de
               ciclismo. Productos de calidad para ciclistas urbanos y de
               montaña.
@@ -71,15 +71,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4 text-verde-neon flex-shrink-0" />
-                <span className="text-sm text-white">Bogotá, Colombia</span>
+                <span className="text-sm text-white">Cali, Colombia</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-verde-neon flex-shrink-0" />
                 <a
-                  href="tel:+573000000000"
+                  href="tel:+573003094854"
                   className="text-sm text-white hover:text-verde-neon transition-colors"
                 >
-                  +57 300 000 0000
+                  +57 300 309 4854
                 </a>
               </div>
               <div className="flex items-center space-x-3">

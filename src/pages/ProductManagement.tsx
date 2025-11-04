@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { AdminPageLayout } from '@/components/AdminPageLayout'
+import { TempAdminPage } from '@/components/TempAdminPage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { formatPrice } from '@/utils/formatters'
 import {
   Plus,
   Edit,
@@ -339,14 +340,7 @@ const ProductManagement = () => {
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
-  }
+  // Función formatPrice movida a utils/formatters.ts
 
   if (isLoading) {
     return (
@@ -357,7 +351,7 @@ const ProductManagement = () => {
   }
 
   return (
-    <AdminPageLayout
+    <TempAdminPage
       title="Gestión de Productos"
       description="Administra el catálogo completo de productos de RockBros"
       icon={Package}
@@ -587,7 +581,7 @@ const ProductManagement = () => {
     >
       <div className="space-y-6">
         {/* Filters */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -654,7 +648,7 @@ const ProductManagement = () => {
           {products?.map(product => (
             <Card
               key={product.id}
-              className="hover:shadow-lg transition-shadow"
+              className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-gray-700/20 transition-shadow"
             >
               <CardContent className={viewMode === 'square' ? 'p-2' : 'p-4'}>
                 {viewMode === 'square' ? (
@@ -676,7 +670,7 @@ const ProductManagement = () => {
 
                     <div className="space-y-1">
                       <div className="flex items-start justify-between mb-1">
-                        <h3 className="font-semibold text-xs text-gray-900 line-clamp-2 leading-tight">
+                        <h3 className="font-semibold text-xs text-gray-100 line-clamp-2 leading-tight">
                           {product.name}
                         </h3>
                         <Badge
@@ -696,7 +690,7 @@ const ProductManagement = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                      <div className="flex items-center justify-between text-xs text-gray-300 mb-1">
                         <span>Stock: {product.stock}</span>
                         <span className="capitalize text-xs truncate ml-1">
                           {product.category}
@@ -752,7 +746,7 @@ const ProductManagement = () => {
 
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
+                        <h3 className="font-semibold text-lg text-gray-100 line-clamp-2">
                           {product.name}
                         </h3>
                         <Badge
@@ -762,7 +756,7 @@ const ProductManagement = () => {
                         </Badge>
                       </div>
 
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-sm text-gray-300 line-clamp-2">
                         {product.description}
                       </p>
 
@@ -774,10 +768,10 @@ const ProductManagement = () => {
                           </span>
                         </div>
 
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center space-x-4 text-sm text-gray-300">
                           <span>Stock: {product.stock}</span>
                           <span className="capitalize">{product.category}</span>
-                          <span className="text-gray-500">
+                          <span className="text-gray-400">
                             Marca: {product.brand}
                           </span>
                         </div>
@@ -820,14 +814,14 @@ const ProductManagement = () => {
         </div>
 
         {products?.length === 0 && (
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="pt-6">
               <div className="text-center py-12">
                 <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-100 mb-2">
                   No se encontraron productos
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-300">
                   {searchTerm || selectedCategory !== 'all'
                     ? 'Intenta ajustar los filtros de búsqueda'
                     : 'Comienza creando tu primer producto'}
@@ -837,7 +831,7 @@ const ProductManagement = () => {
           </Card>
         )}
       </div>
-    </AdminPageLayout>
+    </TempAdminPage>
   )
 }
 

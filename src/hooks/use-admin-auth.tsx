@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/use-auth'
+import { getCurrentUser } from '@/lib/auth'
 
 interface AdminProfile {
   id: string
@@ -26,37 +26,41 @@ export const useAdminAuth = () => {
         throw new Error('No authenticated user')
       }
 
-      // Obtener el perfil del usuario para verificar el rol
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role, created_at, updated_at')
-        .eq('id', user.id)
-        .maybeSingle()
+      // Usar getCurrentUser que ya maneja la creación automática de perfiles
+      const { user: currentUser, error } = await getCurrentUser()
 
-      if (error) {
-        console.error('Error fetching user profile:', error)
+      if (error || !currentUser) {
+        console.error('Error fetching current user:', error)
         // Fallback: tratar como no admin si hay error
         return {
-          user,
+          user: null,
           profile: undefined,
           isAdmin: false,
         }
       }
 
-      // Derivar rol: del perfil si existe, de metadatos si no
-      type Meta = { role?: 'user' | 'admin' }
-      const roleFromMeta =
-        (user as unknown as { user_metadata?: Meta; app_metadata?: Meta })
-          .user_metadata?.role ||
-        (user as unknown as { user_metadata?: Meta; app_metadata?: Meta })
-          .app_metadata?.role
-      const derivedRole =
-        (profile?.role as AdminProfile['role']) || roleFromMeta || 'user'
+      const isAdmin = currentUser.role === 'admin'
+
+      const profileData: AdminProfile = {
+        id: currentUser.id,
+        email: currentUser.email || '',
+        full_name: currentUser.full_name || '',
+        role: currentUser.role as 'user' | 'admin',
+        created_at: new Date().toISOString(), // Usar fecha actual como fallback
+        updated_at: new Date().toISOString(), // Usar fecha actual como fallback
+      }
+
+      console.log('Admin auth data:', {
+        userId: currentUser.id,
+        role: currentUser.role,
+        isAdmin,
+        hasProfile: true, // getCurrentUser siempre asegura que existe
+      })
 
       return {
-        user,
-        profile: (profile as AdminProfile) || undefined,
-        isAdmin: derivedRole === 'admin',
+        user: profileData,
+        profile: profileData,
+        isAdmin,
       }
     },
     enabled: !!user,

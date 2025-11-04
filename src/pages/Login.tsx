@@ -65,7 +65,7 @@ const Login = () => {
           // El LoginForm debe llamar a signIn y dejar que el efecto maneje la redirección
           onLogin={signIn}
           loading={loading || authLoading}
-          redirect={() => navigate('/dashboard')}
+          redirect={() => navigate('/perfil')}
         />
         <div className="mt-4 text-center">
           <span className="text-sm text-muted-foreground">o</span>

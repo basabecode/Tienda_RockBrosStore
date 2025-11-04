@@ -23,8 +23,7 @@ const rockBrosInfo = {
       description:
         'Productos probados y certificados para máximo rendimiento en cada ruta',
       highlight: 'Certificación Internacional',
-      image:
-        'https://images.unsplash.com/photo-1544191696-15398b73dd9d?w=800&h=600&fit=crop&q=80',
+      image: 'public/hero_ppal/ciclista_en_carretera.jpeg',
       gradient: 'from-brand-primary/90 to-brand-dark/80',
     },
     {
@@ -33,8 +32,7 @@ const rockBrosInfo = {
       description:
         'Diseños únicos con tecnología avanzada pensados para ciclistas profesionales y aficionados',
       highlight: 'Tecnología de Vanguardia',
-      image:
-        'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800&h=600&fit=crop&q=80',
+      image: '/hero_ppal/bicileta_rockbros.jpeg',
       gradient: 'from-brand-secondary/90 to-brand-primary/80',
     },
     {
@@ -43,8 +41,7 @@ const rockBrosInfo = {
       description:
         'Envíos seguros a toda Colombia con garantía completa y soporte técnico especializado',
       highlight: 'Cobertura 100% Colombia',
-      image:
-        'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&h=600&fit=crop&q=80',
+      image: '/hero_ppal/66b1e23689260.jpeg',
       gradient: 'from-brand-dark/90 to-brand-neutral/80',
     },
     {
@@ -53,8 +50,7 @@ const rockBrosInfo = {
       description:
         'Cada producto está diseñado con la experiencia y el conocimiento de ciclistas apasionados',
       highlight: 'Hecho por Ciclistas',
-      image:
-        'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop&q=80',
+      image: '/hero_ppal/66b1e90cef032.jpeg',
       gradient: 'from-brand-primary/90 to-brand-secondary/80',
     },
   ],
@@ -105,21 +101,24 @@ const Brands = () => {
       aria-labelledby="brands-title"
     >
       {/* Section Header */}
-      <div className="container mx-auto px-4 mb-16">
+      <div className="container mx-auto px-4 mb-16 animate-fade-in">
         <div className="text-center">
-          <Badge variant="secondary" className="mb-4 text-sm font-medium">
+          <Badge
+            variant="secondary"
+            className="mb-6 text-sm font-medium bg-gradient-to-r from-brand-secondary/20 to-brand-primary/20 text-gray-800 border-brand-secondary/30 px-4 py-2 rounded-full"
+          >
             Nuestra Marca
           </Badge>
           <h2
             id="brands-title"
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white leading-tight"
           >
             Conoce
-            <span className="block gradient-primary bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent mt-2">
               RockBros
             </span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Somos distribuidores oficiales de RockBros en Colombia, ofreciendo
             productos de alta calidad para ciclistas apasionados como tú.
           </p>
@@ -168,10 +167,10 @@ const Brands = () => {
       </div>
       */}
 
-      {/* Brand Values Slider - Full Width */}
-      <div className="relative w-full overflow-hidden">
-        {/* Slides Container - Altura responsiva */}
-        <div className="relative h-[70vh] min-h-[500px] max-h-[800px]">
+      {/* Brand Values Slider - Optimizado para formato 16:9 */}
+      <div className="relative w-full overflow-hidden rounded-3xl mx-4 shadow-2xl">
+        {/* Slides Container - Aspecto 16:9 responsivo */}
+        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
           {rockBrosInfo.brandSlides.map((slide, index) => (
             <div
               key={slide.id}
@@ -181,73 +180,83 @@ const Brands = () => {
                   : 'opacity-0 scale-105'
               }`}
             >
-              {/* Background Image */}
-              <div className="absolute inset-0">
+              {/* Background Image - Formato 16:9 optimizado */}
+              <div className="absolute inset-0 rounded-3xl overflow-hidden">
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out"
+                  className="w-full h-full object-cover transition-all duration-700 ease-out"
                   style={{
                     transform:
-                      index === currentSlide ? 'scale(1.08)' : 'scale(1)',
+                      index === currentSlide ? 'scale(1.02)' : 'scale(1)',
+                    objectPosition: 'center center',
                   }}
                 />
-                {/* Gradient Overlay */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`}
-                ></div>
-                {/* Additional Dark Overlay for Text Readability */}
-                <div className="absolute inset-0 bg-black/30"></div>
+                {/* Overlay mínimo solo para legibilidad del texto */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-black/10"></div>
               </div>
 
-              {/* Content Overlay - Centrado */}
-              <div className="relative z-10 h-full flex items-center justify-center">
-                <div className="container mx-auto px-4">
-                  <div className="max-w-4xl mx-auto text-center">
+              {/* Content Overlay - Mejorado para mejor legibilidad */}
+              <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+                <div className="max-w-6xl mx-auto text-center">
+                  <div className="space-y-6 sm:space-y-8">
                     {/* Highlight Badge */}
                     <Badge
-                      className={`mb-6 bg-brand-secondary/20 text-brand-secondary border-brand-secondary/30 backdrop-blur-sm text-sm font-medium transform transition-all duration-1000 delay-300 ${
+                      className={`inline-flex items-center mb-4 px-6 py-3 bg-black/40 text-brand-secondary border-brand-secondary/60 backdrop-blur-md text-sm font-medium rounded-full transform transition-all duration-1000 delay-300 ${
                         index === currentSlide
-                          ? 'translate-y-0 opacity-100'
-                          : 'translate-y-8 opacity-0'
+                          ? 'translate-y-0 opacity-100 scale-100'
+                          : 'translate-y-8 opacity-0 scale-95'
                       }`}
                     >
                       {slide.highlight}
                     </Badge>
 
-                    {/* Title */}
+                    {/* Title - Mejorada tipografía y espaciado */}
                     <h3
-                      className={`text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight transform transition-all duration-1000 delay-500 ${
+                      className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-4xl mx-auto transform transition-all duration-1000 delay-500 ${
                         index === currentSlide
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-12 opacity-0'
                       }`}
+                      style={{
+                        textShadow:
+                          '0 6px 30px rgba(0, 0, 0, 0.8), 0 3px 12px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)',
+                      }}
                     >
                       {slide.title}
                     </h3>
 
-                    {/* Description */}
-                    <p
-                      className={`text-xl md:text-2xl text-white/90 leading-relaxed mb-8 max-w-3xl mx-auto transform transition-all duration-1000 delay-700 ${
+                    {/* Description - Mejorada legibilidad */}
+                    <div
+                      className={`transform transition-all duration-1000 delay-700 ${
                         index === currentSlide
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-16 opacity-0'
                       }`}
                     >
-                      {slide.description}
-                    </p>
+                      <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 max-w-4xl mx-auto mb-8">
+                        <p className="text-lg sm:text-xl md:text-2xl text-white leading-relaxed">
+                          {slide.description}
+                        </p>
+                      </div>
+                    </div>
 
-                    {/* CTA Button */}
-                    <Button
-                      size="lg"
-                      className={`bg-brand-secondary hover:bg-brand-primary text-brand-contrast shadow-xl hover:shadow-2xl transform transition-all duration-1000 delay-900 ${
+                    {/* CTA Button - Mejorado con mejor contraste */}
+                    <div
+                      className={`transform transition-all duration-1000 delay-900 ${
                         index === currentSlide
                           ? 'translate-y-0 opacity-100'
                           : 'translate-y-20 opacity-0'
                       }`}
                     >
-                      Explorar Productos
-                    </Button>
+                      <Button
+                        size="lg"
+                        className="button-primary-glow px-8 py-4 text-lg font-semibold text-gray-900 shadow-2xl hover:shadow-brand-secondary/25 transform hover:scale-105 transition-all duration-300"
+                      >
+                        Explorar Productos
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -255,31 +264,32 @@ const Brands = () => {
           ))}
         </div>
 
-        {/* Navigation Controls */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="flex items-center space-x-4">
+        {/* Navigation Controls - Mejorados para mejor UX */}
+        <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="flex items-center space-x-6 bg-black/20 backdrop-blur-md rounded-2xl px-6 py-4 border border-white/10">
             {/* Prev Button */}
             <Button
               variant="outline"
               size="icon"
               onClick={prevSlide}
-              className="w-12 h-12 rounded-full bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-md transition-all duration-300"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              aria-label="Slide anterior"
             >
               ←
             </Button>
 
-            {/* Slide Indicators */}
-            <div className="flex space-x-3">
+            {/* Slide Indicators - Mejorados */}
+            <div className="flex space-x-2 sm:space-x-3">
               {rockBrosInfo.brandSlides.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-4 h-4 rounded-full transition-all duration-500 ${
+                  className={`transition-all duration-500 hover:scale-125 ${
                     index === currentSlide
-                      ? 'bg-brand-secondary scale-125 shadow-lg shadow-brand-secondary/50'
-                      : 'bg-white/30 hover:bg-white/50 backdrop-blur-sm'
+                      ? 'w-8 h-3 bg-brand-secondary rounded-full shadow-lg shadow-brand-secondary/50'
+                      : 'w-3 h-3 bg-white/40 hover:bg-white/60 rounded-full'
                   }`}
-                  aria-label={`Go to slide ${index + 1}`}
+                  aria-label={`Ir al slide ${index + 1}`}
                 />
               ))}
             </div>
@@ -289,33 +299,34 @@ const Brands = () => {
               variant="outline"
               size="icon"
               onClick={nextSlide}
-              className="w-12 h-12 rounded-full bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-md transition-all duration-300"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              aria-label="Siguiente slide"
             >
               →
             </Button>
           </div>
         </div>
 
-        {/* Auto-play Indicator */}
-        <div className="absolute top-8 right-8 z-20">
-          <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md rounded-full px-3 py-2">
+        {/* Auto-play Indicator - Mejorado */}
+        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
+          <div className="flex items-center space-x-3 bg-black/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/10">
             <div
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                 isAutoPlaying
                   ? 'bg-brand-secondary animate-pulse shadow-lg shadow-brand-secondary/50'
-                  : 'bg-white/40'
+                  : 'bg-white/50'
               }`}
             />
-            <span className="text-white/80 text-xs font-medium">
+            <span className="text-white/90 text-xs font-medium">
               {isAutoPlaying ? 'Auto' : 'Manual'}
             </span>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+        {/* Progress Bar - Mejorada */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-b-3xl">
           <div
-            className="h-full bg-brand-secondary transition-all duration-300"
+            className="h-full bg-gradient-to-r from-brand-secondary to-brand-primary transition-all duration-500 ease-out shadow-lg shadow-brand-secondary/30 rounded-b-3xl"
             style={{
               width: `${
                 ((currentSlide + 1) / rockBrosInfo.brandSlides.length) * 100

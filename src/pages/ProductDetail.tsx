@@ -417,7 +417,7 @@ const ProductDetail = () => {
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-blue-600" />
+                  <Shield className="h-5 w-5 text-brand-primary" />
                   <span className="text-sm">
                     Garantía de 1 año en todos nuestros productos
                   </span>
