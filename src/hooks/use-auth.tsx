@@ -39,7 +39,14 @@ export function useAuth() {
         if (!isMounted) return
 
         if (error) {
-          console.error('Error obteniendo usuario:', error)
+          // Solo mostrar errores que no sean de sesión faltante
+          if (
+            !error.message.includes('Auth session missing') &&
+            !error.message.includes('session_not_found')
+          ) {
+            console.error('Error obteniendo usuario:', error)
+          }
+
           if (retryCount < maxRetries) {
             retryCount++
             setTimeout(getAndSetUser, 500 * retryCount) // Reducir tiempo de backoff
@@ -51,7 +58,15 @@ export function useAuth() {
         setLoading(false)
         setInitialized(true)
       } catch (error) {
-        console.error('Error inesperado obteniendo usuario:', error)
+        // Solo mostrar errores que no sean de sesión faltante
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        if (
+          !errorMessage.includes('Auth session missing') &&
+          !errorMessage.includes('session_not_found')
+        ) {
+          console.error('Error inesperado obteniendo usuario:', error)
+        }
         if (isMounted) {
           setUser(null)
           setLoading(false)

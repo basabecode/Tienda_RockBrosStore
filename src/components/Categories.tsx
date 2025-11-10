@@ -1,55 +1,66 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 import { useSearch } from '@/hooks/use-search-context'
+import {
+  ROCKBROS_CATEGORIES,
+  getActiveCategories,
+  type Category,
+} from '@/lib/constants/categories'
 
-interface Category {
-  id: string
-  name: string
-  image: string
-  count: number
-  description: string
-  color: string
+// Interfaz para categorías con conteo real
+interface CategoryWithRealCount extends Category {
+  realCount: number
 }
 
-const categories: Category[] = [
-  {
-    id: 'seguridad',
-    name: 'Seguridad',
-    image: '/img/categories/casco.jpg',
-    count: 120,
-    description: 'Cascos y equipamiento de protección',
-    color: 'from-emerald-600/80 to-emerald-500/60', // Verde bosque degradado
-  },
-  {
-    id: 'bolsos',
-    name: 'Bolsos',
-    image: '/img/categories/bolsos.jpg',
-    count: 76,
-    description: 'Mochilas y bolsos para ciclismo',
-    color: 'from-teal-500/80 to-cyan-400/60', // Verde neón degradado
-  },
-  {
-    id: 'accesorios',
-    name: 'Accesorios',
-    image: '/img/categories/gafas3.jpg',
-    count: 87,
-    description: 'Soportes, bombas, candados y más',
-    color: 'from-slate-600/80 to-slate-500/60', // Gris neutro degradado
-  },
-  {
-    id: 'herramientas',
-    name: 'Herramientas',
-    image: '/img/categories/pedales.jpg',
-    count: 53,
-    description: 'Mantenimiento y ajuste profesional',
-    color: 'from-zinc-700/80 to-zinc-600/60', // Gris oscuro degradado
-  },
-]
+// Obtener las categorías base
+const baseCategories: Category[] = getActiveCategories()
 
 const Categories = () => {
   const { setSearchTerm } = useSearch()
+  const [categories, setCategories] = useState<CategoryWithRealCount[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Función para obtener conteo real de productos por categoría
+  const fetchProductCounts = async () => {
+    try {
+      setLoading(true)
+      const categoriesWithCounts = await Promise.all(
+        baseCategories.map(async category => {
+          const { count, error } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('category', category.name)
+            .eq('is_active', true)
+
+          if (error) {
+            console.error(`Error fetching count for ${category.name}:`, error)
+            return { ...category, realCount: category.count } // Fallback al conteo original
+          }
+
+          return { ...category, realCount: count || 0 }
+        })
+      )
+
+      setCategories(categoriesWithCounts)
+    } catch (error) {
+      console.error('Error fetching product counts:', error)
+      // En caso de error, usar categorías base con conteo original
+      setCategories(
+        baseCategories.map(cat => ({ ...cat, realCount: cat.count }))
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cargar conteos al montar el componente
+  useEffect(() => {
+    fetchProductCounts()
+  }, [])
 
   // Función para navegar a una categoría específica
   const handleCategoryClick = (categoryName: string) => {
@@ -80,7 +91,7 @@ const Categories = () => {
       aria-labelledby="categories-title"
     >
       <div className="container mx-auto px-4">
-        {/* Section Header */}
+        {/* Encabezado de Sección */}
         <div className="text-center mb-16 animate-fade-in">
           <Badge
             variant="secondary"
@@ -103,82 +114,96 @@ const Categories = () => {
           </p>
         </div>
       </div>
-      {/* Categories Grid */}
+      {/* Grilla de Categorías */}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {categories.map((category, index) => {
-            return (
-              <Card
-                key={category.id}
-                className="group cursor-pointer relative overflow-hidden rounded-2xl border-0 shadow-lg category-card-hover bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm h-72 sm:h-80 category-card-enter"
-                role="button"
-                tabIndex={0}
-                aria-label={`Explorar categoría ${category.name} con ${category.count} productos`}
-                onClick={() => handleCategoryClick(category.name)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    handleCategoryClick(category.name)
-                  }
-                }}
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <CardContent className="p-0 relative h-full">
-                  {/* Background Image with Improved Positioning */}
-                  <div className="absolute inset-0 overflow-hidden">
-                    <img
-                      src={category.image}
-                      alt={`Categoría ${category.name}`}
-                      className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
-                      loading="lazy"
-                    />
+          {loading
+            ? // Estado de carga
+              Array.from({ length: 4 }).map((_, index) => (
+                <Card
+                  key={index}
+                  className="h-72 sm:h-80 animate-pulse bg-gray-800"
+                >
+                  <CardContent className="p-6 flex flex-col justify-end h-full">
+                    <div className="h-4 bg-gray-600 rounded mb-2"></div>
+                    <div className="h-6 bg-gray-600 rounded mb-4"></div>
+                    <div className="h-8 bg-gray-600 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))
+            : categories.map((category, index) => {
+                return (
+                  <Card
+                    key={category.id}
+                    className="group cursor-pointer relative overflow-hidden rounded-2xl border-0 shadow-lg category-card-hover bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm h-72 sm:h-80 category-card-enter"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Explorar categoría ${category.name} con ${category.realCount} productos`}
+                    onClick={() => handleCategoryClick(category.name)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleCategoryClick(category.name)
+                      }
+                    }}
+                    style={{ animationDelay: `${index * 150}ms` }}
+                  >
+                    <CardContent className="p-0 relative h-full">
+                      {/* Imagen de Fondo con Posicionamiento Mejorado */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <img
+                          src={category.image}
+                          alt={`Categoría ${category.name}`}
+                          className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
+                          loading="lazy"
+                        />
 
-                    {/* Multi-layer Overlay for Better Readability */}
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-br ${category.color} mix-blend-overlay transition-opacity duration-500 group-hover:opacity-80`}
-                    ></div>
+                        {/* Superposición Multicapa para Mejor Legibilidad */}
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-br ${category.color} mix-blend-overlay transition-opacity duration-500 group-hover:opacity-80`}
+                        ></div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
-                    {/* Subtle Border Glow on Hover */}
-                    <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-brand-secondary/40 transition-all duration-500"></div>
-                  </div>
-
-                  {/* Content Container with Better Spacing */}
-                  <div className="relative h-full flex flex-col justify-end p-6">
-                    <div className="transform transition-all duration-500 group-hover:translate-y-[-8px]">
-                      {/* Category Name with Enhanced Typography */}
-                      <h3 className="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-brand-secondary transition-colors duration-300 leading-tight">
-                        {category.name}
-                      </h3>
-
-                      {/* Description with Better Spacing */}
-                      <p className="text-sm sm:text-base text-gray-200 mb-4 leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300">
-                        {category.description}
-                      </p>
-
-                      {/* Enhanced Product Count Badge */}
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          variant="outline"
-                          className="text-xs font-medium bg-black/30 text-brand-secondary border-brand-secondary/40 hover:bg-brand-secondary/20 hover:border-brand-secondary/60 transition-all duration-300 px-3 py-1 badge-enhanced"
-                        >
-                          {category.count} productos
-                        </Badge>
+                        {/* Resplandor de Borde Sutil al Pasar el Mouse */}
+                        <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-brand-secondary/40 transition-all duration-500"></div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
+
+                      {/* Contenedor de Contenido con Mejor Espaciado */}
+                      <div className="relative h-full flex flex-col justify-end p-6">
+                        <div className="transform transition-all duration-500 group-hover:translate-y-[-8px]">
+                          {/* Nombre de Categoría con Tipografía Mejorada */}
+                          <h3 className="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-brand-secondary transition-colors duration-300 leading-tight">
+                            {category.name}
+                          </h3>
+
+                          {/* Descripción con Mejor Espaciado */}
+                          <p className="text-sm sm:text-base text-gray-200 mb-4 leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                            {category.description}
+                          </p>
+
+                          {/* Badge Mejorado de Conteo de Productos */}
+                          <div className="flex items-center justify-between">
+                            <Badge
+                              variant="outline"
+                              className="text-xs font-medium bg-black/30 text-brand-secondary border-brand-secondary/40 hover:bg-brand-secondary/20 hover:border-brand-secondary/60 transition-all duration-300 px-3 py-1 badge-enhanced"
+                            >
+                              {category.realCount} productos
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
         </div>
       </div>
 
-      {/* Featured Category Banner */}
+      {/* Banner de Categoría Destacada */}
       <div className="container mx-auto px-4">
         <Card className="relative overflow-hidden rounded-3xl border-0 shadow-2xl bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm min-h-[400px]">
-          {/* Grid Layout: Exacto 50% - 50% */}
+          {/* Diseño de Grilla: Exacto 50% - 50% */}
           <div className="grid grid-cols-1 md:grid-cols-2 h-full min-h-[400px]">
             {/* Mitad Izquierda - Contenido */}
             <div className="flex flex-col justify-center p-8 md:p-12 space-y-6 relative z-10">

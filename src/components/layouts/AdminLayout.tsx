@@ -11,8 +11,6 @@ import {
   Settings,
   ArrowLeft,
   Shield,
-  Bell,
-  Search,
   Menu,
   X,
   LogOut,
@@ -46,7 +44,7 @@ const AdminLayout = () => {
       label: 'Usuarios',
       path: '/admin/usuarios',
       description: 'Gestión de clientes',
-      badge: '24', // Ejemplo de badge con número
+      badge: null, // Ejemplo de badge con número
     },
     {
       icon: BarChart3,
@@ -79,7 +77,7 @@ const AdminLayout = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               {sidebarOpen ? (
@@ -93,9 +91,11 @@ const AdminLayout = () => {
               onClick={() => navigate('/')}
               className="flex items-center space-x-3 cursor-pointer hover:opacity-90 transition-all duration-200 group"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-verde-bosque to-verde-neon rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-verde-bosque/30 transition-shadow">
-                <span className="text-white font-bold text-sm">RB</span>
-              </div>
+              <img
+                src="/favicon.ico"
+                alt="RockBros Logo"
+                className="w-10 h-10 rounded-xl shadow-lg group-hover:shadow-verde-bosque/30 transition-shadow"
+              />
               <div className="hidden sm:flex flex-col">
                 <span className="text-lg font-bold text-gris-oscuro leading-tight">
                   RockBrosShop
@@ -115,29 +115,27 @@ const AdminLayout = () => {
             </Badge>
           </div>
 
-          {/* Centro - Barra de búsqueda (solo desktop) */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white" />
-              <input
-                type="text"
-                placeholder="Buscar productos, usuarios, pedidos..."
-                className="w-full pl-10 pr-4 py-2 border border-gris-medio/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-verde-bosque focus:border-verde-neon bg-gris-oscuro/70 text-white placeholder:text-white/70 backdrop-blur-sm transition-all duration-200"
-              />
+          {/* Centro - Panel de Control */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8 items-center justify-center">
+            <div className="flex items-center space-x-3 bg-gradient-to-r from-verde-bosque/5 to-verde-neon/5 px-6 py-3 rounded-lg border border-verde-neon/20">
+              <Shield className="w-5 h-5 text-verde-bosque" />
+              <span className="text-lg font-bold text-gris-oscuro">
+                Panel de Control
+              </span>
             </div>
           </div>
 
-          {/* Lado derecho - Notificaciones y usuario */}
+          {/* Lado derecho - Acciones rápidas y usuario */}
           <div className="flex items-center space-x-3">
+            {/* Botón de acceso rápido a tienda */}
             <Button
               variant="ghost"
               size="sm"
-              className="hidden sm:flex relative"
+              onClick={() => navigate('/')}
+              className="hidden sm:flex items-center space-x-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/50"
             >
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                3
-              </span>
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm">Ver Tienda</span>
             </Button>
 
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
@@ -189,22 +187,22 @@ const AdminLayout = () => {
           }`}
         >
           <div className="flex flex-col h-full">
-            {/* Información del admin */}
+            {/* Información del admin
             <div className="p-6 border-b border-gris-medio/20">
               <div className="flex items-center space-x-3">
                 <div className="w-14 h-14 bg-gradient-to-br from-verde-bosque to-verde-neon rounded-xl flex items-center justify-center shadow-lg">
-                  <Shield className="h-7 w-7 text-white" />
+                  <User className="h-7 w-7 text-white" />
                 </div>
                 <div>
                   <h2 className="font-bold text-gris-oscuro text-lg">
-                    Panel de Control
+                    Administrador
                   </h2>
                   <p className="text-sm text-gris-medio font-medium">
                     Gestión completa
                   </p>
                 </div>
               </div>
-            </div>
+            </div>*/}
 
             {/* Navegación principal */}
             <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
@@ -259,6 +257,37 @@ const AdminLayout = () => {
                 )
               })}
             </nav>
+
+            {/* Panel de métricas rápidas */}
+            <div className="px-4 pb-4">
+              <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4">
+                <h3 className="text-sm font-semibold text-emerald-800 mb-3">
+                  Estado del Sistema
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-emerald-700">
+                      Estado del servidor:
+                    </span>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-green-600 font-medium">Activo</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-emerald-700">
+                      Última actualización:
+                    </span>
+                    <span className="text-emerald-600 font-medium">
+                      {new Date().toLocaleTimeString('es-CO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Footer del sidebar */}
             <div className="p-4 border-t border-gris-medio/20">

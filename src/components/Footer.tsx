@@ -11,11 +11,20 @@ import { Separator } from '@/components/ui/separator'
 const Footer = () => {
   const currentYear = new Date().getFullYear()
 
+  // Función para generar enlace de WhatsApp
+  const getWhatsAppLink = () => {
+    const phoneNumber = '573003094854' // Número sin el + y espacios
+    const message =
+      'Hola! Estoy interesado en los productos RockBros y me gustaría obtener más información. ¿Podrían ayudarme?'
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+  }
+
   const quickLinks = [
     { name: 'Inicio', href: '/' },
-    { name: 'Productos', href: '/products' },
+    { name: 'Productos', href: '/#shop' },
     { name: 'Categorías', href: '/#categories' },
-    { name: 'Mi cuenta', href: '/profile' },
+    { name: 'Mi Cuenta', href: '/login' },
+    { name: 'Contacto', href: '#contact' },
   ]
 
   const legalLinks = [
@@ -53,10 +62,12 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <div className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-verde-neon to-verde-bosque rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold text-xl">RB</span>
-              </div>
+            <div className="flex items-center space-x-3 mb-6">
+              <img
+                src="public/favicon.ico"
+                alt="RockBros Logo"
+                className="w-12 h-12"
+              />
               <span className="text-2xl font-bold text-white">
                 RockbrosShop
               </span>
@@ -76,10 +87,14 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4 text-verde-neon flex-shrink-0" />
                 <a
-                  href="tel:+573003094854"
-                  className="text-sm text-white hover:text-verde-neon transition-colors"
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-white hover:text-verde-neon transition-colors flex items-center space-x-2"
+                  title="Contactar por WhatsApp"
                 >
-                  +57 300 309 4854
+                  <span>+57 300 309 4854</span>
+                  <span className="text-xs text-verde-neon/80">(WhatsApp)</span>
                 </a>
               </div>
               <div className="flex items-center space-x-3">

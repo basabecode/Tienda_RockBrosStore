@@ -8,6 +8,9 @@ interface ProductFilters {
   brand?: string
   minPrice?: number
   maxPrice?: number
+  inStock?: boolean
+  onSale?: boolean
+  featured?: boolean
   search?: string
   page?: number
   pageSize?: number
@@ -48,6 +51,15 @@ export const useProductsQuery = (filters: ProductFilters = {}) => {
       if (otherFilters.maxPrice) {
         countQuery = countQuery.lte('price', otherFilters.maxPrice)
       }
+      if (otherFilters.inStock) {
+        countQuery = countQuery.gt('stock', 0)
+      }
+      if (otherFilters.onSale) {
+        countQuery = countQuery.not('compare_price', 'is', null)
+      }
+      if (otherFilters.featured) {
+        countQuery = countQuery.eq('is_featured', true)
+      }
       if (otherFilters.search) {
         countQuery = countQuery.or(
           `name.ilike.%${otherFilters.search}%,description.ilike.%${otherFilters.search}%`
@@ -66,6 +78,15 @@ export const useProductsQuery = (filters: ProductFilters = {}) => {
       }
       if (otherFilters.maxPrice) {
         query = query.lte('price', otherFilters.maxPrice)
+      }
+      if (otherFilters.inStock) {
+        query = query.gt('stock', 0)
+      }
+      if (otherFilters.onSale) {
+        query = query.not('compare_price', 'is', null)
+      }
+      if (otherFilters.featured) {
+        query = query.eq('is_featured', true)
       }
       if (otherFilters.search) {
         query = query.or(

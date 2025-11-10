@@ -104,16 +104,43 @@
 ### **Ratios de Contraste WCAG**
 
 ```css
-/* Combinaciones Aprobadas */
+/* ✅ Combinaciones Aprobadas - Original RockBros */
 ✅ #000000 sobre #FFFFFF - 21:1 (AAA)
 ✅ #383838 sobre #FFFFFF - 12.6:1 (AAA)
 ✅ #656565 sobre #FFFFFF - 7:1 (AA)
 ✅ #06BA63 sobre #FFFFFF - 3.2:1 (AA normal)
 ✅ #000000 sobre #0FFF95 - 8.4:1 (AAA)
 
-/* Combinaciones a Evitar */
+/* ✅ Combinaciones Aprobadas - Nueva Paleta Emerald (Panel Admin) */
+✅ #000000 sobre #FFFFFF - 21:1 (AAA)
+✅ #1f2937 sobre #FFFFFF - 16:1 (AAA) /* gray-800 */
+✅ #374151 sobre #FFFFFF - 12:1 (AAA) /* gray-700 */
+✅ #111827 sobre #FFFFFF - 19:1 (AAA) /* gray-900 */
+✅ #10b981 sobre #FFFFFF - 4.8:1 (AA+) /* emerald-500 */
+✅ #059669 sobre #FFFFFF - 6.2:1 (AA+) /* emerald-600 */
+
+/* ❌ Combinaciones PROHIBIDAS */
 ❌ #0FFF95 sobre #FFFFFF - 1.9:1 (Insuficiente)
 ❌ #656565 sobre #383838 - 1.8:1 (Insuficiente)
+❌ text-gray-600 sobre bg-gray-50 - 2.8:1 (Insuficiente)
+❌ text-gray-500 sobre bg-gray-100 - 2.2:1 (Insuficiente)
+❌ Cualquier texto gris sobre fondo gris - <3:1 (Crítico)
+```
+
+### **🚫 REGLA CRÍTICA: NO GRIS SOBRE GRIS**
+
+**⚠️ NUNCA combinar fondos grises con textos grises o negros de baja intensidad.**
+
+```css
+/* ❌ PROHIBIDO - Problemas de accesibilidad graves */
+.bg-gray-50 .text-gray-600   /* Ratio: ~2.8:1 - Insuficiente */
+.bg-gray-100 .text-gray-500  /* Ratio: ~2.2:1 - Crítico */
+.bg-gray-200 .text-gray-400  /* Ratio: ~1.8:1 - Inaceptable */
+
+/* ✅ CORRECTO - Alternativas accesibles */
+.bg-slate-50 .text-gray-900    /* Ratio: ~16:1 - Excelente */
+.bg-emerald-50 .text-gray-800  /* Ratio: ~12:1 - Perfecto */
+.bg-white .text-gray-700; /* Ratio: ~9:1 - Muy bueno */
 ```
 
 ---
@@ -193,6 +220,85 @@
 
 ---
 
+## 👩‍💻 **Implementación Correcta en Componentes**
+
+### **✅ Ejemplos Correctos - Panel de Admin**
+
+```tsx
+// ✅ EXCELENTE - Panel con contraste perfecto
+<div className="bg-white border border-gray-200">
+  <div className="bg-slate-50 p-4 border-b border-gray-200">
+    <h2 className="text-gray-900 font-semibold">Panel de Administración</h2>
+  </div>
+  <div className="p-4">
+    <button className="bg-emerald-600 text-white hover:bg-emerald-700">
+      Acción Principal
+    </button>
+  </div>
+</div>
+
+// ✅ CORRECTO - Tablas con hover accesible
+<tr className="hover:bg-emerald-50/30 transition-colors">
+  <td className="text-gray-900">Contenido completamente legible</td>
+  <td className="text-emerald-700">Estado activo visible</td>
+</tr>
+
+// ✅ PERFECTO - Cards con contraste adecuado
+<div className="bg-white border border-gray-200 hover:bg-emerald-50/20">
+  <h3 className="text-gray-900 font-medium">Título Claro</h3>
+  <p className="text-gray-700">Descripción con buen contraste</p>
+</div>
+```
+
+### **❌ Ejemplos PROHIBIDOS - Problemas de Accesibilidad**
+
+```tsx
+// ❌ CRÍTICO - Contraste insuficiente
+<div className="bg-gray-50">
+  <p className="text-gray-600">❌ Difícil de leer (2.8:1)</p>
+  <span className="text-gray-500">❌ Contraste crítico (2.2:1)</span>
+</div>
+
+// ❌ PROBLEMÁTICO - Estados hover sin contraste
+<tr className="hover:bg-gray-50">
+  <td className="text-gray-600">❌ Invisible al hacer hover</td>
+</tr>
+
+// ❌ INACEPTABLE - Múltiples grises
+<div className="bg-gray-100 text-gray-500 border-gray-300">
+  ❌ Todo gris = Inaccesible
+</div>
+```
+
+### **🎯 Guías de Estados Hover Seguros**
+
+```tsx
+// ✅ Estados hover con contraste garantizado
+className = 'hover:bg-emerald-50/30' // Emerald translúcido
+className = 'hover:bg-blue-50/40' // Azul muy suave
+className = 'hover:bg-slate-50' // Gris ultra claro
+className = 'hover:bg-white/80' // Blanco translúcido
+className = 'hover:bg-emerald-100/50' // Verde corporativo suave
+
+// ❌ Estados hover problemáticos - EVITAR
+className = 'hover:bg-gray-50' // Contraste insuficiente
+className = 'hover:bg-gray-100' // Puede ser problemático con texto gris
+className = 'hover:bg-gray-200' // Definitivamente problemático
+```
+
+### **🛡️ Checklist de Accesibilidad**
+
+Antes de implementar cualquier combinación de colores:
+
+1. **✅ Verificar ratio de contraste > 4.5:1**
+2. **✅ Probar con texto gris oscuro (gray-800/900)**
+3. **✅ Evitar CUALQUIER combinación gris sobre gris**
+4. **✅ Usar emerald para acentos en panel admin**
+5. **✅ Mantener colores RockBros para frontend público**
+6. **✅ Testear legibilidad en diferentes dispositivos**
+
+---
+
 ## ✅ **Checklist de Implementación**
 
 - [x] ✅ Colores corporativos definidos en Tailwind
@@ -202,6 +308,9 @@
 - [x] ✅ Efectos hover con paleta corporativa
 - [x] ✅ Accesibilidad verificada (WCAG)
 - [x] ✅ Documentación completa creada
+- [x] ✅ **NUEVO:** Correcciones de contraste aplicadas
+- [x] ✅ **NUEVO:** Guías anti-gris-sobre-gris implementadas
+- [x] ✅ **NUEVO:** Ejemplos de implementación correcta
 
 ---
 

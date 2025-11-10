@@ -25,16 +25,11 @@ const initialFilters: ProductFilters = {
   featured: false,
 }
 
-// Categorías oficiales de RockBros
-export const ROCKBROS_CATEGORIES = [
-  'Accesorio',
-  'Seguridad',
-  'Bolsos',
-  'Herramientas',
-]
+// Importar categorías centralizadas
+import { getCategoryNames } from '@/lib/constants/categories'
 
 // Marca única
-export const ROCKBROS_BRAND = 'RockBros'
+const ROCKBROS_BRAND = 'RockBros'
 
 export const useProductSearch = (products: Product[] = []) => {
   const [filters, setFilters] = useState<ProductFilters>(initialFilters)
@@ -151,7 +146,7 @@ export const useProductSearch = (products: Product[] = []) => {
   // Estadísticas para filtros
   const filterStats = useMemo(() => {
     // Usar las categorías oficiales de RockBros
-    const availableCategories = ROCKBROS_CATEGORIES
+    const availableCategories = getCategoryNames()
 
     // Solo mostrar RockBros como marca disponible
     const availableBrands = [ROCKBROS_BRAND]

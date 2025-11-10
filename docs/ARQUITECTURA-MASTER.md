@@ -167,26 +167,50 @@ tienda_rockbros_store/
 - Validación client-side y server-side
 - Protección contra inyecciones
 
-## 🎨 Design System
+## 🎨 Design System (Rediseñado UI/UX 2025)
 
-### Paleta de Colores Corporativa
+### Paleta de Colores Profesional
 
-- **Verde Neón**: `#00ff00` (Primary)
-- **Gris Oscuro**: `#2d2d2d` (Background)
-- **Blanco**: `#ffffff` (Text)
-- **Azul Corporativo**: `#1e40af` (Secondary)
+- **Emerald**: `emerald-500` (#10b981) - Primary actions
+- **Emerald Dark**: `emerald-600` (#059669) - Hover states
+- **Emerald Light**: `emerald-50` (#ecfdf5) - Backgrounds
+- **Gray Modern**: `slate-800` (#1e293b) - Text primary
+- **Gray Medium**: `slate-600` (#475569) - Text secondary
+- **Gray Light**: `slate-100` (#f1f5f9) - Borders/backgrounds
 
-### Typography Scale
+### Colores Semánticos
 
-- **Headings**: Inter font-family
-- **Body**: System font stack
-- **Responsive scaling**: fluid typography
+- **Success**: `green-500` (#22c55e) - Estados exitosos
+- **Warning**: `amber-500` (#f59e0b) - Alertas/stock bajo
+- **Error**: `red-500` (#ef4444) - Errores/eliminación
+- **Info**: `blue-500` (#3b82f6) - Información general
 
-### Componentes UI
+### Typography Scale (Rediseñada)
 
-- 20 componentes base de shadcn/ui
-- Personalización con tokens de design
-- Variantes consistentes y accesibles
+- **Display**: text-4xl font-bold (36px) - Títulos principales
+- **Heading 1**: text-3xl font-semibold (30px) - Secciones
+- **Heading 2**: text-2xl font-semibold (24px) - Subsecciones
+- **Heading 3**: text-xl font-medium (20px) - Cards/componentes
+- **Body Large**: text-base (16px) - Texto principal
+- **Body**: text-sm (14px) - Texto secundario
+- **Caption**: text-xs (12px) - Labels/metadatos
+
+### Spacing System (8pt Grid)
+
+- **xs**: 4px - Elementos muy cercanos
+- **sm**: 8px - Elementos relacionados
+- **md**: 16px - Separación estándar
+- **lg**: 24px - Secciones diferentes
+- **xl**: 32px - Bloques principales
+- **2xl**: 48px - Layout principal
+
+### Componentes UI Mejorados
+
+- **shadcn/ui v2**: 25+ componentes optimizados
+- **Charts**: Recharts integrado para visualizaciones
+- **Data Tables**: Sorting, filtering, pagination
+- **Forms**: react-hook-form + zod validation
+- **Responsive**: Mobile-first con breakpoints consistentes
 
 ## 📈 Roadmap Técnico
 

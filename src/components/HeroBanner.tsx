@@ -42,9 +42,8 @@ const HeroBanner = () => {
         <div className="max-w-4xl mx-auto text-center text-white">
           {/* Badge */}
           <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-white/20">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
             <span className="text-sm font-medium">
-              Confiado por ciclistas en toda Colombia
+              Producto para ciclistas en Colombia
             </span>
           </div>
 
@@ -55,19 +54,18 @@ const HeroBanner = () => {
           >
             Equipamiento
             <span className="block gradient-hero bg-clip-text text-transparent">
-              para ciclismo
+              para ciclistas
             </span>
             <span className="block text-3xl md:text-4xl lg:text-5xl font-normal mt-2">
               Calidad y confianza en Colombia
               <br />
-              Página en construcción &#128522;
             </span>
           </h1>
 
           {/* Description */}
           <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-90 animate-slide-up">
-            Encuentra cascos, ropa, componentes y accesorios seleccionados para
-            ciclistas urbanos y de montaña. Envíos a toda Colombia.
+            Encuentra cascos, bolsos, componentes y accesorios seleccionados
+            para ciclistas urbanos y de montaña. Envíos a toda Colombia.
           </p>
 
           {/* CTA Buttons - Solo dos botones */}

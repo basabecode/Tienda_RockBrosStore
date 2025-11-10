@@ -50,6 +50,17 @@ export async function getCurrentUser(): Promise<{
     } = await supabase.auth.getUser()
 
     if (error) {
+      // Manejar error de sesión faltante de forma silenciosa
+      if (
+        error.message.includes('Auth session missing') ||
+        error.message.includes('session_not_found') ||
+        error.name === 'AuthSessionMissingError'
+      ) {
+        console.log('👤 No hay sesión activa - usuario no autenticado')
+        userCache = { user: null, timestamp: now }
+        return { user: null, error: null } // No retornar error para sesión faltante
+      }
+
       console.error('❌ Error obteniendo usuario de auth:', error)
       return { user: null, error }
     }

@@ -23,7 +23,7 @@ const rockBrosInfo = {
       description:
         'Productos probados y certificados para máximo rendimiento en cada ruta',
       highlight: 'Certificación Internacional',
-      image: 'public/hero_ppal/ciclista_en_carretera.jpeg',
+      image: '/hero_ppal/ciclista_en_carretera.jpeg',
       gradient: 'from-brand-primary/90 to-brand-dark/80',
     },
     {
@@ -60,28 +60,31 @@ const Brands = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
-  // Auto-slide functionality - Transiciones más lentas
+  // Auto-slide cada 8 segundos
   useEffect(() => {
     if (!isAutoPlaying) return
 
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % rockBrosInfo.brandSlides.length)
-    }, 8000) // Cambio cada 8 segundos (más lento)
+    }, 8000)
 
     return () => clearInterval(interval)
   }, [isAutoPlaying])
 
+  // Función para pausar temporalmente el auto-play
+  const pauseAutoPlay = () => {
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 15000)
+  }
+
   const goToSlide = (index: number) => {
     setCurrentSlide(index)
-    setIsAutoPlaying(false)
-    // Reactivar auto-slide después de 15 segundos
-    setTimeout(() => setIsAutoPlaying(true), 15000)
+    pauseAutoPlay()
   }
 
   const nextSlide = () => {
     setCurrentSlide(prev => (prev + 1) % rockBrosInfo.brandSlides.length)
-    setIsAutoPlaying(false)
-    setTimeout(() => setIsAutoPlaying(true), 15000)
+    pauseAutoPlay()
   }
 
   const prevSlide = () => {
@@ -90,8 +93,7 @@ const Brands = () => {
         (prev - 1 + rockBrosInfo.brandSlides.length) %
         rockBrosInfo.brandSlides.length
     )
-    setIsAutoPlaying(false)
-    setTimeout(() => setIsAutoPlaying(true), 15000)
+    pauseAutoPlay()
   }
 
   return (
@@ -264,7 +266,7 @@ const Brands = () => {
           ))}
         </div>
 
-        {/* Navigation Controls - Mejorados para mejor UX */}
+        {/* Navigation Controls */}
         <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
           <div className="flex items-center space-x-6 bg-black/20 backdrop-blur-md rounded-2xl px-6 py-4 border border-white/10">
             {/* Prev Button */}
@@ -272,21 +274,21 @@ const Brands = () => {
               variant="outline"
               size="icon"
               onClick={prevSlide}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              className="w-12 h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300"
               aria-label="Slide anterior"
             >
               ←
             </Button>
 
-            {/* Slide Indicators - Mejorados */}
-            <div className="flex space-x-2 sm:space-x-3">
+            {/* Slide Indicators */}
+            <div className="flex space-x-3">
               {rockBrosInfo.brandSlides.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`transition-all duration-500 hover:scale-125 ${
+                  className={`transition-all duration-300 ${
                     index === currentSlide
-                      ? 'w-8 h-3 bg-brand-secondary rounded-full shadow-lg shadow-brand-secondary/50'
+                      ? 'w-8 h-3 bg-brand-secondary rounded-full'
                       : 'w-3 h-3 bg-white/40 hover:bg-white/60 rounded-full'
                   }`}
                   aria-label={`Ir al slide ${index + 1}`}
@@ -299,7 +301,7 @@ const Brands = () => {
               variant="outline"
               size="icon"
               onClick={nextSlide}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300 hover:scale-110"
+              className="w-12 h-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-brand-secondary/20 hover:border-brand-secondary/40 hover:text-brand-secondary backdrop-blur-sm transition-all duration-300"
               aria-label="Siguiente slide"
             >
               →
@@ -307,26 +309,10 @@ const Brands = () => {
           </div>
         </div>
 
-        {/* Auto-play Indicator - Mejorado */}
-        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
-          <div className="flex items-center space-x-3 bg-black/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/10">
-            <div
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                isAutoPlaying
-                  ? 'bg-brand-secondary animate-pulse shadow-lg shadow-brand-secondary/50'
-                  : 'bg-white/50'
-              }`}
-            />
-            <span className="text-white/90 text-xs font-medium">
-              {isAutoPlaying ? 'Auto' : 'Manual'}
-            </span>
-          </div>
-        </div>
-
-        {/* Progress Bar - Mejorada */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-b-3xl">
+        {/* Progress Bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 rounded-b-3xl">
           <div
-            className="h-full bg-gradient-to-r from-brand-secondary to-brand-primary transition-all duration-500 ease-out shadow-lg shadow-brand-secondary/30 rounded-b-3xl"
+            className="h-full bg-gradient-to-r from-brand-secondary to-brand-primary transition-all duration-500 rounded-b-3xl"
             style={{
               width: `${
                 ((currentSlide + 1) / rockBrosInfo.brandSlides.length) * 100
