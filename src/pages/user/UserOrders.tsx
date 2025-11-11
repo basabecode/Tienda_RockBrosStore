@@ -48,18 +48,20 @@ interface OrderItem {
   products: {
     name: string
     price: number
-    image_url?: string
+    main_image?: string
   }
 }
 
 interface Order {
   id: string
   status: string
-  total_amount: number
+  total: number
   created_at: string
   shipping_address?: {
-    address: string
+    address_line_1: string
     city: string
+    state?: string
+    postal_code?: string
   }
   order_items?: OrderItem[]
 }
@@ -85,6 +87,36 @@ const UserOrders = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const ordersPerPage = 10
 
+  // Consulta para verificar el historial total de compras del usuario
+  const { data: userOrderHistory, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ['user-order-history', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return { hasOrders: false, totalOrders: 0 }
+
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, status')
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error fetching user order history:', error)
+        return { hasOrders: false, totalOrders: 0 }
+      }
+
+      return {
+        hasOrders: data && data.length > 0,
+        totalOrders: data ? data.length : 0,
+        hasCompletedOrders: data
+          ? data.some(
+              order =>
+                order.status === 'completed' || order.status === 'delivered'
+            )
+          : false,
+      }
+    },
+    enabled: !!user?.email,
+  })
+
   // Consulta de pedidos con filtros
   const {
     data: ordersData,
@@ -102,9 +134,14 @@ const UserOrders = () => {
           `
           id,
           status,
-          total_amount,
+          total,
           created_at,
-          shipping_address,
+          shipping_address:addresses!shipping_address_id(
+            address_line_1,
+            city,
+            state,
+            postal_code
+          ),
           order_items (
             id,
             quantity,
@@ -112,7 +149,7 @@ const UserOrders = () => {
             products (
               name,
               price,
-              image_url
+              main_image
             )
           )
         `,
@@ -160,10 +197,7 @@ const UserOrders = () => {
 
   // Estadísticas calculadas
   const orderStats = useMemo(() => {
-    const totalSpent = orders.reduce(
-      (sum, order) => sum + order.total_amount,
-      0
-    )
+    const totalSpent = orders.reduce((sum, order) => sum + order.total, 0)
     const pendingOrders = orders.filter(
       order => order.status === 'pending'
     ).length
@@ -239,11 +273,11 @@ const UserOrders = () => {
   // Componente de estadísticas
   const OrderStats = () => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <Card className="border-primary/20">
+      <Card className="border-emerald-200/50 hover:border-emerald-300 transition-all duration-300 shadow-sm hover:shadow-md bg-gradient-to-br from-white to-emerald-50/30">
         <CardContent className="p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <ShoppingBag className="h-6 w-6 text-primary" />
+            <div className="p-3 bg-emerald-100 rounded-xl shadow-sm">
+              <ShoppingBag className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Pedidos</p>
@@ -253,11 +287,11 @@ const UserOrders = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20">
+      <Card className="border-emerald-200/50 hover:border-emerald-300 transition-all duration-300 shadow-sm hover:shadow-md bg-gradient-to-br from-white to-emerald-50/30">
         <CardContent className="p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+            <div className="p-3 bg-emerald-100 rounded-xl shadow-sm">
+              <CheckCircle className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completados</p>
@@ -269,11 +303,11 @@ const UserOrders = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20">
+      <Card className="border-emerald-200/50 hover:border-emerald-300 transition-all duration-300 shadow-sm hover:shadow-md bg-gradient-to-br from-white to-emerald-50/30">
         <CardContent className="p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-emerald-100 rounded-xl shadow-sm">
+              <TrendingUp className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Gastado</p>
@@ -285,11 +319,11 @@ const UserOrders = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20">
+      <Card className="border-emerald-200/50 hover:border-emerald-300 transition-all duration-300 shadow-sm hover:shadow-md bg-gradient-to-br from-white to-emerald-50/30">
         <CardContent className="p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Clock className="h-6 w-6 text-purple-600" />
+            <div className="p-3 bg-amber-100 rounded-xl shadow-sm">
+              <Clock className="h-6 w-6 text-amber-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pendientes</p>
@@ -311,7 +345,7 @@ const UserOrders = () => {
     const itemsCount = order.order_items?.length || 0
 
     return (
-      <Card className="hover:shadow-md transition-shadow border-l-4 border-l-primary/20">
+      <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-emerald-400 shadow-sm bg-gradient-to-r from-white to-emerald-50/20 hover:from-emerald-50/40 hover:to-emerald-50/60">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -321,7 +355,7 @@ const UserOrders = () => {
                 </h3>
                 <Badge
                   variant={statusInfo.variant}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 shadow-sm"
                 >
                   <StatusIcon className="h-3 w-3" />
                   {statusInfo.label}
@@ -355,8 +389,8 @@ const UserOrders = () => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">
-                {formatPrice(order.total_amount)}
+              <p className="text-2xl font-bold text-emerald-600">
+                {formatPrice(order.total)}
               </p>
               <p className="text-sm text-gray-500">Total del pedido</p>
             </div>
@@ -369,7 +403,7 @@ const UserOrders = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate(`/orders/${order.id}`)}
-              className="flex-1"
+              className="flex-1 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
             >
               <Eye className="h-4 w-4 mr-2" />
               Ver Detalles
@@ -378,7 +412,7 @@ const UserOrders = () => {
               variant="outline"
               size="sm"
               onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
-              className="flex-1"
+              className="flex-1 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
             >
               {isExpanded ? (
                 <ChevronUp className="h-4 w-4 mr-2" />
@@ -401,9 +435,9 @@ const UserOrders = () => {
                   className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
                 >
                   <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                    {item.products.image_url ? (
+                    {item.products.main_image ? (
                       <img
-                        src={item.products.image_url}
+                        src={item.products.main_image}
                         alt={item.products.name}
                         className="w-full h-full object-cover"
                       />
@@ -439,31 +473,153 @@ const UserOrders = () => {
     )
   }
 
-  // Estado vacío
-  const EmptyState = () => (
-    <Card className="border-2 border-dashed border-gray-200">
+  // Estado para primera compra (motivacional)
+  const FirstPurchaseState = () => (
+    <Card className="border-2 border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
       <CardContent className="p-12 text-center">
-        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag className="h-12 w-12 text-gray-400" />
+        <div className="mx-auto w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag className="h-12 w-12 text-emerald-600" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          No tienes pedidos aún
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">
+          ¡Bienvenido a RockBros Shop! 🎉
         </h3>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Cuando realices tu primera compra, podrás ver el historial y
-          seguimiento de tus pedidos aquí.
+        <p className="text-gray-700 mb-6 max-w-lg mx-auto text-lg">
+          Aún no has realizado tu primera compra. Te invitamos a explorar
+          nuestro catálogo de productos de alta calidad para ciclismo y
+          aventura.
         </p>
-        <Button
-          onClick={() => navigate('/products')}
-          size="lg"
-          className="h-11"
-        >
-          <ShoppingBag className="h-4 w-4 mr-2" />
-          Explorar Productos
-        </Button>
+        <div className="bg-white rounded-lg p-4 border border-emerald-200 mb-6 max-w-md mx-auto">
+          <p className="text-emerald-700 font-medium">
+            ✨ ¡Oferta especial para nuevos clientes!
+          </p>
+          <p className="text-sm text-gray-600">
+            Descubre productos exclusivos y obtén envío gratis en tu primera
+            compra.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button
+            onClick={() => navigate('/#shop')}
+            size="lg"
+            className="h-12 bg-emerald-600 hover:bg-emerald-700"
+          >
+            <ShoppingBag className="h-5 w-5 mr-2" />
+            Explorar Productos
+          </Button>
+          <Button
+            onClick={() => navigate('/#categories')}
+            variant="outline"
+            size="lg"
+            className="h-12 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+          >
+            Ver Categorías
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
+
+  // Estado para usuario con compras completadas
+  const ThankYouState = () => {
+    const latestOrder = ordersData?.orders?.[0]
+    return (
+      <div className="space-y-6">
+        <Card className="border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-white shadow-lg">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-4">
+              ¡Muchas gracias por tu compra! 🙏
+            </h3>
+            <p className="text-gray-700 text-center mb-6 text-lg">
+              Apreciamos tu confianza en RockBros Shop. Tu pedido llegará pronto
+              a tu domicilio.
+            </p>
+
+            {latestOrder && (
+              <div className="bg-white rounded-lg border border-emerald-200 p-6 mb-6">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <Package className="h-5 w-5 mr-2 text-emerald-600" />
+                  Último Pedido #{latestOrder.id.slice(-8)}
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Estado:</p>
+                    <Badge variant="secondary" className="mb-3">
+                      {getStatusInfo(latestOrder.status).label}
+                    </Badge>
+                    <p className="text-sm text-gray-600 mb-1">Total:</p>
+                    <p className="font-semibold text-emerald-600 text-lg">
+                      {formatPrice(latestOrder.total)}
+                    </p>
+                  </div>
+                  {latestOrder.shipping_address && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Dirección de entrega:
+                      </p>
+                      <div className="text-sm text-gray-900">
+                        <p className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-1 text-emerald-600" />
+                          {latestOrder.shipping_address.address_line_1}
+                        </p>
+                        <p className="ml-5">
+                          {latestOrder.shipping_address.city}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {latestOrder.order_items &&
+                  latestOrder.order_items.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <p className="text-sm text-gray-600 mb-2">Productos:</p>
+                      <div className="space-y-2">
+                        {latestOrder.order_items
+                          .slice(0, 3)
+                          .map((item, index) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center text-sm"
+                            >
+                              <span className="font-medium text-gray-900">
+                                {item.quantity}x {item.products?.name}
+                              </span>
+                              <span className="ml-auto text-emerald-600 font-medium">
+                                {formatPrice(item.unit_price * item.quantity)}
+                              </span>
+                            </div>
+                          ))}
+                        {latestOrder.order_items.length > 3 && (
+                          <p className="text-xs text-gray-500">
+                            +{latestOrder.order_items.length - 3} productos más
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            )}
+
+            <div className="flex justify-center">
+              <Button
+                onClick={() => navigate('/#shop')}
+                variant="outline"
+                className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+              >
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Continuar Comprando
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   // Estados de carga y error
   if (!user) {
@@ -502,7 +658,7 @@ const UserOrders = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <ShoppingBag className="h-8 w-8 text-primary" />
+              <ShoppingBag className="h-8 w-8 text-emerald-600" />
               Mis Pedidos
             </h1>
             <p className="text-gray-600 mt-1">Error al cargar tus pedidos</p>
@@ -538,17 +694,17 @@ const UserOrders = () => {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="h-11"
+          className="h-11 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <ShoppingBag className="h-8 w-8 text-primary" />
+            <ShoppingBag className="h-8 w-8 text-emerald-600" />
             Mis Pedidos
           </h1>
           <p className="text-gray-600 mt-1">
@@ -574,7 +730,7 @@ const UserOrders = () => {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center text-lg text-gray-900">
-                <Filter className="h-5 w-5 mr-2 text-primary" />
+                <Filter className="h-5 w-5 mr-2 text-emerald-600" />
                 Filtros de Búsqueda
               </CardTitle>
               <Button
@@ -692,7 +848,18 @@ const UserOrders = () => {
           </div>
         </div>
       ) : totalOrders === 0 ? (
-        <EmptyState />
+        // Lógica para mostrar diferentes estados según el historial del usuario
+        isLoadingHistory ? (
+          <div className="flex justify-center p-12">
+            <RefreshCw className="h-8 w-8 animate-spin text-emerald-600" />
+          </div>
+        ) : userOrderHistory?.hasOrders === false ? (
+          <FirstPurchaseState />
+        ) : userOrderHistory?.hasCompletedOrders ? (
+          <ThankYouState />
+        ) : (
+          <FirstPurchaseState />
+        )
       ) : (
         <div className="space-y-6">
           {/* Información de resultados */}

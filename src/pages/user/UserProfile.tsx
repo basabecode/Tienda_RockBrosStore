@@ -85,12 +85,7 @@ const UserProfile = () => {
 
   // Calcular completitud del perfil
   const getProfileCompletion = () => {
-    const fields = [
-      formData.full_name,
-      formData.phone,
-      formData.email,
-      user?.profile?.avatar_url,
-    ]
+    const fields = [formData.full_name, formData.phone, formData.email]
     const completedFields = fields.filter(Boolean).length
     return Math.round((completedFields / fields.length) * 100)
   }
@@ -240,46 +235,20 @@ const UserProfile = () => {
         <CardContent className="p-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center space-x-6">
-              {/* Avatar mejorado */}
-              <div className="relative">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold"
-                  style={{ backgroundColor: colors.primary }}
-                >
-                  {user?.profile?.avatar_url ? (
-                    <img
-                      src={user.profile.avatar_url}
-                      alt="Avatar"
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    (user?.profile?.full_name || user?.full_name || 'U')
-                      .charAt(0)
-                      .toUpperCase()
-                  )}
-                </div>
-                <button
-                  className="absolute -bottom-1 -right-1 p-2 rounded-full bg-white shadow-md border"
-                  style={{ minHeight: '44px', minWidth: '44px' }}
-                >
-                  <Camera
-                    className="h-4 w-4"
-                    style={{ color: colors.gray[600] }}
-                  />
-                </button>
+              {/* Avatar simplificado */}
+              <div className="flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-lg">
+                <span className="text-white text-2xl font-bold">
+                  {(user?.profile?.full_name || user?.full_name || 'U')
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
               </div>
 
               <div>
-                <h1
-                  className="text-3xl font-bold"
-                  style={{ color: colors.gray[900], ...typography.title }}
-                >
+                <h1 className="text-3xl font-bold text-gray-900">
                   {user?.profile?.full_name || user?.full_name || 'Usuario'}
                 </h1>
-                <p
-                  className="text-lg flex items-center"
-                  style={{ color: colors.gray[600] }}
-                >
+                <p className="text-lg flex items-center text-gray-600">
                   <Mail className="h-5 w-5 mr-2" />
                   {user?.email}
                 </p>
@@ -310,21 +279,15 @@ const UserProfile = () => {
             <div className="mt-6 lg:mt-0 lg:text-right">
               <div className="space-y-3">
                 <div>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: colors.gray[600] }}
-                  >
+                  <p className="text-sm font-medium text-gray-600">
                     Completitud del perfil
                   </p>
-                  <p
-                    className="text-2xl font-bold"
-                    style={{ color: colors.primary }}
-                  >
+                  <p className="text-2xl font-bold text-emerald-600">
                     {getProfileCompletion()}%
                   </p>
                 </div>
                 <Progress value={getProfileCompletion()} className="w-40" />
-                <p className="text-xs" style={{ color: colors.gray[500] }}>
+                <p className="text-xs text-gray-500">
                   {getProfileCompletion() === 100
                     ? '¡Perfil completo!'
                     : 'Completa tu información'}
@@ -341,10 +304,7 @@ const UserProfile = () => {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList
-          className="grid w-full grid-cols-3 p-1"
-          style={{ backgroundColor: colors.gray[50], borderRadius: '12px' }}
-        >
+        <TabsList className="grid w-full grid-cols-3 p-1 bg-gray-50 rounded-xl">
           <TabsTrigger
             value="personal"
             className="flex items-center space-x-2 px-6 py-3 rounded-lg"
@@ -373,33 +333,18 @@ const UserProfile = () => {
 
         {/* Tab de Información Personal */}
         <TabsContent value="personal">
-          <Card style={{ boxShadow: shadows.sm }}>
-            <CardHeader
-              className="pb-6"
-              style={{
-                backgroundColor: colors.gray[50] + '80',
-                borderBottom: `1px solid ${colors.gray[200]}`,
-              }}
-            >
+          <Card className="bg-white border border-gray-200 shadow-sm">
+            <CardHeader className="pb-6 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div
-                    className="p-3 rounded-full"
-                    style={{ backgroundColor: `${colors.primary}20` }}
-                  >
-                    <User
-                      className="h-6 w-6"
-                      style={{ color: colors.primary }}
-                    />
+                  <div className="p-3 rounded-full bg-emerald-50">
+                    <User className="h-6 w-6 text-emerald-600" />
                   </div>
                   <div>
-                    <CardTitle
-                      className="text-xl"
-                      style={{ color: colors.gray[900] }}
-                    >
+                    <CardTitle className="text-xl text-gray-900">
                       Información Personal
                     </CardTitle>
-                    <p className="text-sm" style={{ color: colors.gray[600] }}>
+                    <p className="text-sm text-gray-600">
                       Actualiza tu información personal y de contacto
                     </p>
                   </div>
@@ -413,14 +358,7 @@ const UserProfile = () => {
                     }
                   }}
                   disabled={loading}
-                  className="text-white"
-                  style={{
-                    backgroundColor: isEditing
-                      ? colors.success
-                      : colors.primary,
-                    minHeight: '44px',
-                    transition: transitions.normal,
-                  }}
+                  className="text-white bg-emerald-600 hover:bg-emerald-700 min-h-[44px] transition-colors"
                 >
                   {loading ? (
                     'Guardando...'
@@ -444,13 +382,9 @@ const UserProfile = () => {
                   <div className="space-y-3">
                     <Label
                       htmlFor="full_name"
-                      className="text-base font-semibold flex items-center"
-                      style={{ color: colors.gray[700] }}
+                      className="text-base font-semibold flex items-center text-gray-700"
                     >
-                      <User
-                        className="h-4 w-4 mr-2"
-                        style={{ color: colors.gray[500] }}
-                      />
+                      <User className="h-4 w-4 mr-2 text-gray-500" />
                       Nombre Completo *
                     </Label>
                     <Input
@@ -460,16 +394,11 @@ const UserProfile = () => {
                         setFormData({ ...formData, full_name: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-12 text-base"
-                      style={{
-                        backgroundColor: isEditing
-                          ? colors.white
-                          : colors.gray[50],
-                        borderColor: isEditing
-                          ? colors.primary
-                          : colors.gray[200],
-                        minHeight: '44px',
-                      }}
+                      className={`h-12 text-base min-h-[44px] ${
+                        isEditing
+                          ? 'bg-white border-gray-300 focus:border-emerald-500 focus:ring-emerald-200'
+                          : 'bg-gray-50 border-gray-200 cursor-not-allowed'
+                      }`}
                       placeholder="Ingresa tu nombre completo"
                     />
                   </div>
@@ -477,27 +406,18 @@ const UserProfile = () => {
                   <div className="space-y-3">
                     <Label
                       htmlFor="email"
-                      className="text-base font-semibold flex items-center"
-                      style={{ color: colors.gray[700] }}
+                      className="text-base font-semibold flex items-center text-gray-700"
                     >
-                      <Mail
-                        className="h-4 w-4 mr-2"
-                        style={{ color: colors.gray[500] }}
-                      />
+                      <Mail className="h-4 w-4 mr-2 text-gray-500" />
                       Correo Electrónico
                     </Label>
                     <Input
                       id="email"
                       value={formData.email}
                       disabled
-                      className="h-12 text-base cursor-not-allowed"
-                      style={{
-                        backgroundColor: colors.gray[50],
-                        borderColor: colors.gray[200],
-                        minHeight: '44px',
-                      }}
+                      className="h-12 text-base cursor-not-allowed bg-gray-50 border-gray-200 min-h-[44px]"
                     />
-                    <p className="text-sm" style={{ color: colors.gray[500] }}>
+                    <p className="text-sm text-gray-500">
                       El correo electrónico no se puede modificar
                     </p>
                   </div>
@@ -505,13 +425,9 @@ const UserProfile = () => {
                   <div className="space-y-3 lg:col-span-2">
                     <Label
                       htmlFor="phone"
-                      className="text-base font-semibold flex items-center"
-                      style={{ color: colors.gray[700] }}
+                      className="text-sm font-medium text-gray-700 flex items-center"
                     >
-                      <Phone
-                        className="h-4 w-4 mr-2"
-                        style={{ color: colors.gray[500] }}
-                      />
+                      <Phone className="h-4 w-4 mr-2 text-gray-500" />
                       Número de Teléfono
                     </Label>
                     <Input
@@ -521,16 +437,11 @@ const UserProfile = () => {
                         setFormData({ ...formData, phone: e.target.value })
                       }
                       disabled={!isEditing}
-                      className="h-12 text-base"
-                      style={{
-                        backgroundColor: isEditing
-                          ? colors.white
-                          : colors.gray[50],
-                        borderColor: isEditing
-                          ? colors.primary
-                          : colors.gray[200],
-                        minHeight: '44px',
-                      }}
+                      className={`h-12 text-base min-h-[44px] ${
+                        isEditing
+                          ? 'bg-white border-emerald-500'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
                       placeholder="+57 300 123 4567"
                     />
                   </div>

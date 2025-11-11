@@ -17,6 +17,8 @@ import {
   AlertCircle,
   RefreshCw,
   Plus,
+  X,
+  ShoppingBag,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -410,26 +412,68 @@ export default function UserFavorites() {
     </div>
   )
 
-  // Componente de estado vacío
+  // Estado vacío mejorado y motivacional
   const EmptyState = () => (
-    <Card className="border-2 border-dashed border-gray-200">
-      <CardContent className="p-12 text-center">
-        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-          <Heart className="h-12 w-12 text-gray-400" />
-        </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          No tienes favoritos aún
+    <div className="text-center py-16">
+      <div className="mx-auto w-32 h-32 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full flex items-center justify-center mb-8">
+        <Heart className="h-16 w-16 text-emerald-600" />
+      </div>
+
+      <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        ¡Tu lista de favoritos está vacía!
+      </h2>
+
+      <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
+        Descubre productos increíbles y guárdalos aquí para encontrarlos
+        fácilmente después.
+      </p>
+
+      {/* Tips útiles */}
+      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-8 mb-8 max-w-2xl mx-auto border border-emerald-200">
+        <h3 className="font-semibold text-emerald-900 mb-4 text-xl">
+          💡 Tips para una mejor experiencia:
         </h3>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          Empieza a explorar nuestros productos y guarda los que más te gusten
-          para encontrarlos fácilmente después.
-        </p>
-        <Button onClick={handleExploreProducts} size="lg" className="h-11">
-          <Plus className="h-4 w-4 mr-2" />
-          Explorar Productos
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-800">
+          <div className="flex items-start gap-3">
+            <Heart className="h-5 w-5 mt-0.5 text-emerald-600" />
+            <span>
+              Guarda productos que te interesen haciendo clic en el corazón ❤️
+            </span>
+          </div>
+          <div className="flex items-start gap-3">
+            <TrendingUp className="h-5 w-5 mt-0.5 text-emerald-600" />
+            <span>Compara precios y características antes de comprar</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 mt-0.5 text-emerald-600" />
+            <span>Recibe notificaciones de ofertas especiales</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <ShoppingBag className="h-5 w-5 mt-0.5 text-emerald-600" />
+            <span>Agrega múltiples productos al carrito desde aquí</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Acciones */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button
+          onClick={handleExploreProducts}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 text-lg"
+        >
+          <Search className="h-5 w-5 mr-2" />
+          Explorar productos
         </Button>
-      </CardContent>
-    </Card>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/categories')}
+          className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 px-8 py-3 text-lg"
+        >
+          <Package className="h-5 w-5 mr-2" />
+          Ver categorías
+        </Button>
+      </div>
+    </div>
   )
 
   // Estados de carga y error
@@ -504,95 +548,140 @@ export default function UserFavorites() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="h-11"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Heart className="h-8 w-8 text-primary" />
-            Mis Favoritos
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Productos que has guardado para más tarde
-          </p>
+      {/* Header mejorado con gradiente */}
+      <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="h-10 border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver
+            </Button>
+
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-3 mb-2">
+                <Heart className="h-8 w-8 text-white" />
+                Mis Favoritos
+              </h1>
+              <p className="text-emerald-100 opacity-90">
+                Productos que has guardado para más tarde • {favoriteCount}{' '}
+                elementos
+              </p>
+            </div>
+          </div>
+
+          {/* Acciones rápidas */}
+          {favoriteCount > 0 && (
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                onClick={refetch}
+                className="bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Actualizar
+              </Button>
+              <div className="bg-white/15 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                <span className="text-sm font-medium text-white">
+                  Valor total: {formatPrice(totalValue)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Estadísticas */}
       {!isLoading && favoriteCount > 0 && <FavoritesStats />}
 
-      {/* Controles de filtro y búsqueda */}
+      {/* Controles de filtro y búsqueda mejorados */}
       {!isLoading && favoriteCount > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex-1 w-full sm:w-auto">
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader className="bg-gray-50/50 rounded-t-lg border-b border-gray-100">
+            <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+              {/* Búsqueda mejorada */}
+              <div className="flex-1 w-full">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    placeholder="Buscar en favoritos..."
+                    placeholder="Buscar productos en favoritos..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11"
+                    className="pl-12 pr-4 h-12 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-base"
                   />
+                  {searchQuery && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <Select
-                  value={filterBy}
-                  onValueChange={(value: FilterOption) => setFilterBy(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[140px] h-11">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="available">Disponibles</SelectItem>
-                    <SelectItem value="unavailable">Agotados</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Filtros y vista */}
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <Select
+                    value={filterBy}
+                    onValueChange={(value: FilterOption) => setFilterBy(value)}
+                  >
+                    <SelectTrigger className="w-[140px] h-12 border-gray-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">📦 Todos</SelectItem>
+                      <SelectItem value="available">✅ Disponibles</SelectItem>
+                      <SelectItem value="unavailable">❌ Agotados</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Select
                   value={sortBy}
                   onValueChange={(value: SortOption) => setSortBy(value)}
                 >
-                  <SelectTrigger className="w-full sm:w-[160px] h-11">
+                  <SelectTrigger className="w-[160px] h-12 border-gray-300">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date-added">Más recientes</SelectItem>
-                    <SelectItem value="name">Nombre A-Z</SelectItem>
-                    <SelectItem value="price-asc">Precio menor</SelectItem>
-                    <SelectItem value="price-desc">Precio mayor</SelectItem>
+                    <SelectItem value="date-added">🕐 Más recientes</SelectItem>
+                    <SelectItem value="name">🔤 Nombre A-Z</SelectItem>
+                    <SelectItem value="price-asc">💰 Precio menor</SelectItem>
+                    <SelectItem value="price-desc">💎 Precio mayor</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <Separator orientation="vertical" className="h-8" />
-
-                <div className="flex gap-2">
+                <div className="flex items-center border border-gray-300 rounded-lg bg-white overflow-hidden">
                   <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
-                    className="h-11 w-11 p-0"
+                    className={`h-12 px-4 rounded-none ${
+                      viewMode === 'grid'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'hover:bg-gray-50'
+                    }`}
                   >
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className="h-11 w-11 p-0"
+                    className={`h-12 px-4 rounded-none ${
+                      viewMode === 'list'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'hover:bg-gray-50'
+                    }`}
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -600,6 +689,37 @@ export default function UserFavorites() {
               </div>
             </div>
           </CardHeader>
+
+          {/* Estadísticas y acciones rápidas */}
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Package className="h-4 w-4" />
+                {filteredAndSortedFavorites.length} de {favoriteCount} productos
+                {searchQuery && ` • Búsqueda: "${searchQuery}"`}
+              </div>
+              {availableCount > 0 && (
+                <Button
+                  onClick={() => {
+                    const availableProducts = filteredAndSortedFavorites.filter(
+                      item => item.products.stock > 0
+                    )
+                    availableProducts.forEach(item => {
+                      handleAddToCart(item.products)
+                    })
+                    toast({
+                      title: 'Productos agregados',
+                      description: `${availableProducts.length} productos agregados al carrito`,
+                    })
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Agregar disponibles al carrito ({availableCount})
+                </Button>
+              )}
+            </div>
+          </CardContent>
         </Card>
       )}
 
